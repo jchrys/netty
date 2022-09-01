@@ -235,7 +235,7 @@ final class NioBuffer extends AdaptableBuffer<NioBuffer>
         checkLength(length);
         if (capacity() < srcPos + length) {
             throw new IndexOutOfBoundsException("The srcPos + length is beyond the end of the buffer: " +
-                                                "srcPos = " + srcPos + ", length = " + length + '.');
+                                               "srcPos = " + srcPos + ", length = " + length + '.');
         }
         if (dest.capacity() < destPos + length) {
             throw new IndexOutOfBoundsException("The destPos + length is beyond the end of the buffer: " +
@@ -370,7 +370,7 @@ final class NioBuffer extends AdaptableBuffer<NioBuffer>
     public int bytesBefore(Buffer needle) {
         UncheckedLoadByte uncheckedLoadByte = NioBuffer::uncheckedLoadByte;
         return InternalBufferUtils.bytesBefore(this, uncheckedLoadByte,
-                                               needle, needle instanceof NioBuffer? uncheckedLoadByte : null);
+                                               needle, needle instanceof NioBuffer ? uncheckedLoadByte : null);
     }
 
     /**
@@ -396,7 +396,7 @@ final class NioBuffer extends AdaptableBuffer<NioBuffer>
         checkLength(length);
         if (capacity() < fromOffset + length) {
             throw new IndexOutOfBoundsException("The fromOffset + length is beyond the end of the buffer: " +
-                                                "fromOffset = " + fromOffset + ", length = " + length + '.');
+                    "fromOffset = " + fromOffset + ", length = " + length + '.');
         }
         return new ForwardNioByteCursor(rmem, fromOffset, length);
     }
@@ -415,7 +415,7 @@ final class NioBuffer extends AdaptableBuffer<NioBuffer>
         }
         if (fromOffset - length < -1) {
             throw new IndexOutOfBoundsException("The fromOffset - length would underflow the buffer: " +
-                                                "fromOffset = " + fromOffset + ", length = " + length + '.');
+                    "fromOffset = " + fromOffset + ", length = " + length + '.');
         }
         return new ReverseNioByteCursor(rmem, fromOffset, length);
     }
@@ -487,8 +487,7 @@ final class NioBuffer extends AdaptableBuffer<NioBuffer>
         }
         if (capacity() < splitOffset) {
             throw new IllegalArgumentException("The split offset cannot be greater than the buffer capacity, " +
-                                               "but the split offset was " + splitOffset + ", and capacity is " +
-                                               capacity() + '.');
+                    "but the split offset was " + splitOffset + ", and capacity is " + capacity() + '.');
         }
         if (!isAccessible()) {
             throw bufferIsClosed();
