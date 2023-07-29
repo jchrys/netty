@@ -18,7 +18,7 @@ package io.netty.microbenchmark.common;
 import io.netty.microbench.util.AbstractMicrobenchmark;
 import io.netty.util.AsciiString;
 import io.netty.util.CharsetUtil;
-import io.netty.util.internal.PlatformDependent;
+import io.netty.util.NewAsciiString;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
@@ -26,6 +26,7 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.Random;
 
@@ -34,51 +35,83 @@ import java.util.Random;
 @Warmup(iterations = 5)
 public class AsciiStringBenchmark extends AbstractMicrobenchmark {
 
-    @Param({ "3", "5", "7", "8", "10", "20", "50", "100", "1000" })
+    @Param({ "10", "100", "1000", "10000" })
     public int size;
+
+    private boolean adder;
 
     private AsciiString asciiString;
     private String string;
+    private AsciiString alphabeticAsciiString;
+    private NewAsciiString alphabeticNewAsciiString;
+    private byte[] alphabeticBytes;
     private static final Random random = new Random();
 
     @Setup(Level.Trial)
     public void setup() {
+        adder = true;
         byte[] bytes = new byte[size];
         random.nextBytes(bytes);
         asciiString = new AsciiString(bytes, false);
+        alphabeticBytes = new byte[size];
+        nextAlphabeticBytes(alphabeticBytes);
+        alphabeticAsciiString = new AsciiString(alphabeticBytes, true);
+        alphabeticNewAsciiString = new NewAsciiString(alphabeticBytes, true);
         string = new String(bytes, CharsetUtil.US_ASCII);
     }
 
-    @Benchmark
-    public int hashCodeBenchBytesOld() {
-        int h = 0;
-        final int end = asciiString.arrayOffset() + asciiString.length();
-        for (int i = asciiString.arrayOffset(); i < end; ++i) {
-            // masking with 0x1F reduces the number of overall bits that impact the hash code but makes the hash
-            // code the same regardless of character case (upper case or lower case hash is the same).
-            h = h * 31 + (asciiString.array()[i] & 0x1F);
+    private static void nextAlphabeticBytes(byte[] bytes) {
+        // This function fills the given 'bytes' array with random alphabetic characters.
+        // The input 'bytes' should have enough space to store the random alphabetic characters.
+
+        Random random = new Random();
+
+        // Loop through the byte array.
+        bytes[0] = 'Z';
+        for (int i = 1; i < bytes.length; i++) {
+            // Generate a random integer between 0 and 51 (inclusive) to represent the alphabetic characters.
+            int randomValue = random.nextInt(52);
+
+            // Map the random value to the appropriate ASCII value for an alphabetic character.
+            if (randomValue < 26) {
+                // Random uppercase letter (A to Z) - ASCII values: 65 to 90.
+                bytes[i] = (byte) (randomValue + 'A');
+            } else {
+                // Random lowercase letter (a to z) - ASCII values: 97 to 122.
+                bytes[i] = (byte) (randomValue - 26 + 'a');
+            }
         }
-        return h;
     }
 
     @Benchmark
-    public int hashCodeBenchBytesNew() {
-        return PlatformDependent.hashCodeAscii(asciiString.array(), asciiString.arrayOffset(), asciiString.length());
+    public void oldToLowerCase(Blackhole blackhole) {
+        blackhole.consume(alphabeticAsciiString.toLowerCase());
     }
 
     @Benchmark
-    public int hashCodeBenchCharSequenceOld() {
-        int h = 0;
-        for (int i = 0; i < string.length(); ++i) {
-            // masking with 0x1F reduces the number of overall bits that impact the hash code but makes the hash
-            // code the same regardless of character case (upper case or lower case hash is the same).
-            h = h * 31 + (string.charAt(i) & 0x1F);
+    public void toLowerCase(Blackhole blackhole) {
+        blackhole.consume(alphabeticNewAsciiString.toLowerCase());
+    }
+
+    @Benchmark
+    public void oldEqualsIgnoreCase(Blackhole blackhole) {
+        for (int i = 0; i < size; ++i) {
+            blackhole.consume(AsciiString.equalsIgnoreCase(alphabeticBytes[i], alphabeticBytes[(i + 5) % size]));
         }
-        return h;
     }
 
     @Benchmark
-    public int hashCodeBenchCharSequenceNew() {
-        return PlatformDependent.hashCodeAscii(string);
+    public void equalsIgnoreCase(Blackhole blackhole) {
+        for (int i = 0; i < size; ++i) {
+            blackhole.consume(NewAsciiString.equalsIgnoreCase(alphabeticBytes[i], alphabeticBytes[(i + 5) % size]));
+        }
+    }
+
+    @Benchmark
+    public void equalsIgnoreCase2(Blackhole blackhole) {
+        for (int i = 0; i < size; ++i) {
+            blackhole.consume(NewAsciiString.equalsIgnoreCase2(alphabeticBytes[i], alphabeticBytes[(i + 5) % size]));
+        }
     }
 }
+
