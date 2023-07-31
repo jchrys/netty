@@ -2,6 +2,7 @@ package io.netty.microbenchmark.common;
 
 import io.netty.microbench.util.AbstractMicrobenchmark;
 import io.netty.util.AsciiString;
+import io.netty.util.internal.PlatformDependent;
 import io.netty.util.internal.SuppressJava6Requirement;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Level;
@@ -23,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 8, time = 1)
 @State(Scope.Benchmark)
 public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
+    public static Object blackhole;
+
     @Param({ "7", "16", "23", "32" })
     int size;
     @Param({ "4", "11" })
@@ -45,6 +48,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
     @SuppressJava6Requirement(reason = "using SplittableRandom to reliably produce data")
     public void init() {
         System.setProperty("io.netty.noUnsafe", Boolean.valueOf(noUnsafe).toString());
+        blackhole = PlatformDependent.isUnaligned();
         SplittableRandom random = new SplittableRandom(seed);
         permutations = 1 << logPermutations;
         this.data = new AsciiString[permutations];

@@ -28,11 +28,11 @@ public final class ByteArrayUtil {
     private static final int INDEX_NOT_FOUND = -1;
 
     public static int firstIndexOf(byte[] array, int fromIndex, int toIndex, byte value) {
-        final int length = toIndex - fromIndex;
         final int capacity = array.length;
         if (capacity == 0) {
             return INDEX_NOT_FOUND;
         }
+        final int length = toIndex - fromIndex;
         if (MathUtil.isOutOfBounds(fromIndex, length, capacity)) {
             throw new IndexOutOfBoundsException(); // TODO: exception details
         }
