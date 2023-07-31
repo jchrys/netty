@@ -736,6 +736,23 @@ public final class AsciiString implements CharSequence, Comparable<CharSequence>
         return INDEX_NOT_FOUND;
     }
 
+    public int swarIndexOf(char ch, int start) {
+        if (ch > MAX_CHAR_VALUE) {
+            return INDEX_NOT_FOUND;
+        }
+
+        if (start < 0) {
+            start = 0;
+        }
+
+        final byte chAsByte = c2b0(ch);
+        final int index = ByteArrayUtil.firstIndexOf(value, offset + start, offset + length, chAsByte);
+        if (index == INDEX_NOT_FOUND) {
+            return INDEX_NOT_FOUND;
+        }
+        return index - offset;
+    }
+
     /**
      * Searches in this string for the last index of the specified string. The search for the string starts at the end
      * and moves towards the beginning of this string.
