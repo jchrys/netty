@@ -753,8 +753,9 @@ public final class AsciiString implements CharSequence, Comparable<CharSequence>
         }
 
         final byte chAsByte = c2b0(ch);
+        final int len = offset + length;
         if (!PlatformDependent.isUnaligned()) {
-            for (int i = start + offset; i < offset + length; i += 8) {
+            for (int i = start + offset; i < len; ++i) {
                 if (value[i] == chAsByte) {
                     return i - offset;
                 }
