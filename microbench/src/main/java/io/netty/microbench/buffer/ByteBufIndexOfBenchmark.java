@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 8, time = 1)
 public class ByteBufIndexOfBenchmark extends AbstractMicrobenchmark {
 
-    @Param({ "7", "16", "23", "32" })
+    @Param({ "7", "16", "17", "23", "32" })
     int size;
 
     @Param({ "4", "11" })
