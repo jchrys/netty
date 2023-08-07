@@ -605,7 +605,8 @@ public final class ByteBufUtil {
                 offset += Long.BYTES;
             }
         }
-        if (offset == fromIndex) {
+        final int byteCount = length & 7;
+        if (byteCount == 0) {
             return -1;
         }
         return unrolledFirstIndexOf(buffer, offset, length & 7, value);
