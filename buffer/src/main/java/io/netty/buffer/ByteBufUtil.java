@@ -605,11 +605,10 @@ public final class ByteBufUtil {
                 offset += Long.BYTES;
             }
         }
-        final int byteCount = length & 7;
-        if (byteCount == 0) {
+        if (offset == toIndex) {
             return -1;
         }
-        return unrolledFirstIndexOf(buffer, offset, byteCount, value);
+        return unrolledFirstIndexOf(buffer, offset, length & 7, value);
     }
 
     private static int linearFirstIndexOf(AbstractByteBuf buffer, int fromIndex, int toIndex, byte value) {
