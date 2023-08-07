@@ -530,7 +530,10 @@ public final class ByteBufUtil {
     }
 
     private static int unrolledFirstIndexOf(AbstractByteBuf buffer, int fromIndex, int byteCount, byte value) {
-        assert byteCount > 0 && byteCount < 8;
+        assert byteCount >= 0 && byteCount < 8;
+        if (byteCount == 0) {
+            return -1;
+        }
         if (buffer._getByte(fromIndex) == value) {
             return fromIndex;
         }
@@ -606,10 +609,7 @@ public final class ByteBufUtil {
             }
         }
         final int byteCount = length & 7;
-        if (byteCount > 0) {
-            return unrolledFirstIndexOf(buffer, offset, byteCount, value);
-        }
-        return -1;
+        return unrolledFirstIndexOf(buffer, offset, byteCount, value);
     }
 
     private static int linearFirstIndexOf(AbstractByteBuf buffer, int fromIndex, int toIndex, byte value) {
