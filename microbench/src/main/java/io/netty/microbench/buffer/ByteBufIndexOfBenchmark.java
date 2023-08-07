@@ -46,7 +46,7 @@ public class ByteBufIndexOfBenchmark extends AbstractMicrobenchmark {
     @Param({ "7", "16", "23", "32" })
     int size;
 
-    @Param({ "4", "11" })
+    @Param({ "11" })
     int logPermutations;
 
     @Param({ "1" })
@@ -60,12 +60,12 @@ public class ByteBufIndexOfBenchmark extends AbstractMicrobenchmark {
     @Param({ "0" })
     private byte needleByte;
 
-    @Param({ "true", "false" })
+    @Param({ "false" })
     private boolean direct;
-    @Param({ "false", "true" })
+    @Param({ "false" })
     private boolean noUnsafe;
 
-    @Param({ "false", "true" })
+    @Param({ "true" })
     private boolean pooled;
 
     @Setup(Level.Trial)
