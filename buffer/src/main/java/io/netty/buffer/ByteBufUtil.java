@@ -607,14 +607,7 @@ public final class ByteBufUtil {
         }
         final int byteCount = length & 7;
         if (byteCount > 0) {
-            final int index = unrolledFirstIndexOf(buffer, fromIndex, byteCount, value);
-            if (index != -1) {
-                return index;
-            }
-            offset += byteCount;
-            if (offset == toIndex) {
-                return -1;
-            }
+            return unrolledFirstIndexOf(buffer, offset, byteCount, value);
         }
         return -1;
     }
