@@ -601,18 +601,20 @@ public final class ByteBufUtil {
             }
         }
         final int longCount = length >>> 3;
-        final ByteOrder nativeOrder = ByteOrder.nativeOrder();
-        final boolean isNative = nativeOrder == buffer.order();
-        final boolean useLE = nativeOrder == ByteOrder.LITTLE_ENDIAN;
-        final long pattern = SWARByteSearch.compilePattern(value);
-        for (int i = 0; i < longCount; i++) {
-            // use the faster available getLong
-            final long word = useLE? buffer._getLongLE(offset) : buffer._getLong(offset);
-            int index = SWARByteSearch.firstAnyPattern(word, pattern, isNative);
-            if (index < Long.BYTES) {
-                return offset + index;
+        if (longCount > 0) {
+            final ByteOrder nativeOrder = ByteOrder.nativeOrder();
+            final boolean isNative = nativeOrder == buffer.order();
+            final boolean useLE = nativeOrder == ByteOrder.LITTLE_ENDIAN;
+            final long pattern = SWARByteSearch.compilePattern(value);
+            for (int i = 0; i < longCount; i++) {
+                // use the faster available getLong
+                final long word = useLE? buffer._getLongLE(offset) : buffer._getLong(offset);
+                int index = SWARByteSearch.firstAnyPattern(word, pattern, isNative);
+                if (index < Long.BYTES) {
+                    return offset + index;
+                }
+                offset += Long.BYTES;
             }
-            offset += Long.BYTES;
         }
         return -1;
     }
