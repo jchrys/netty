@@ -589,17 +589,6 @@ public final class ByteBufUtil {
         }
         assert PlatformDependent.isUnaligned();
         int offset = fromIndex;
-        final int byteCount = length & 7;
-        if (byteCount > 0) {
-            final int index = unrolledFirstIndexOf(buffer, fromIndex, byteCount, value);
-            if (index != -1) {
-                return index;
-            }
-            offset += byteCount;
-            if (offset == toIndex) {
-                return -1;
-            }
-        }
         final int longCount = length >>> 3;
         if (longCount > 0) {
             final ByteOrder nativeOrder = ByteOrder.nativeOrder();
@@ -614,6 +603,17 @@ public final class ByteBufUtil {
                     return offset + index;
                 }
                 offset += Long.BYTES;
+            }
+        }
+        final int byteCount = length & 7;
+        if (byteCount > 0) {
+            final int index = unrolledFirstIndexOf(buffer, fromIndex, byteCount, value);
+            if (index != -1) {
+                return index;
+            }
+            offset += byteCount;
+            if (offset == toIndex) {
+                return -1;
             }
         }
         return -1;
