@@ -609,7 +609,7 @@ public final class ByteBufUtil {
         if (byteCount == 0) {
             return -1;
         }
-        return unrolledFirstIndexOf(buffer, offset, length & 7, value);
+        return unrolledFirstIndexOf(buffer, offset, byteCount, value);
     }
 
     private static int linearFirstIndexOf(AbstractByteBuf buffer, int fromIndex, int toIndex, byte value) {
