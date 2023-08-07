@@ -60,7 +60,7 @@ public class ByteBufIndexOfBenchmark extends AbstractMicrobenchmark {
     @Param({ "0" })
     private byte needleByte;
 
-    @Param({ "false" })
+    @Param({ "true" })
     private boolean direct;
     @Param({ "false" })
     private boolean noUnsafe;
