@@ -78,24 +78,42 @@ public final class AsciiStringUtil {
             }
             return -1;
         }
-
         final int length = toIndex - fromIndex;
-
         final int longCount = length >>> 3;
+        final long pattern = SWARByteUtil.compilePattern(value);
         if (longCount > 0) {
-            final boolean isNative = PlatformDependent.BIG_ENDIAN_NATIVE_ORDER;
-            final long pattern = SWARByteUtil.compilePattern(value);
             for (int i = 0; i < longCount; ++i) {
                 final long word = PlatformDependent.getLong(bytes, fromIndex);
-                final int mask = SWARByteUtil.firstAnyPattern(word, pattern, isNative);
-                if (mask < Long.BYTES) {
-                    return fromIndex + mask;
+                final long mask = SWARByteUtil.applyPattern(word, pattern);
+                if (mask != 0) {
+                    return fromIndex + Long.numberOfLeadingZeros(mask);
                 }
                 fromIndex += Long.BYTES;
             }
         }
-
-        return unrolledFirstIndexOf(bytes, fromIndex, toIndex - fromIndex, value);
+        if ((length & 4) != 0) {
+            final int word = PlatformDependent.getInt(bytes, fromIndex);
+            final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
+            if (mask != 0) {
+                return fromIndex + Integer.numberOfLeadingZeros(mask);
+            }
+            fromIndex += Integer.BYTES;
+        }
+        if ((length & 2) != 0) {
+            if (bytes[fromIndex] == value) {
+                return fromIndex;
+            }
+            if (bytes[fromIndex + 1] == value) {
+                return fromIndex + 1;
+            }
+            fromIndex += 2;
+        }
+        if ((length & 1) != 0) {
+            if (bytes[fromIndex] == value) {
+                return fromIndex;
+            }
+        }
+        return -1;
     }
 
     static int firstIndexOf0(byte[] bytes, int fromIndex, int toIndex, byte value) {
@@ -110,43 +128,69 @@ public final class AsciiStringUtil {
         final int length = toIndex - fromIndex;
         final int longCount = length >>> 3;
         final long pattern = SWARByteUtil.compilePattern(value);
-        for (int i = 0; i < longCount; ++i) {
-            final long word = PlatformDependent.getLong(bytes, fromIndex);
-            final long mask = SWARByteUtil.applyPattern(word, pattern);
-            if (mask != 0) {
-                return fromIndex + Long.numberOfLeadingZeros(mask);
-            }
-            fromIndex += Long.BYTES;
-        }
-        return unrolledFirstIndexOf0(bytes, fromIndex, toIndex - fromIndex, value, (int)pattern);
-    }
-
-    private static int unrolledFirstIndexOf0(byte[] bytes, int fromIndex, int length, int value, int pattern) {
-        if (length >= 4) {
+        if ((length & 4) != 0) {
             final int word = PlatformDependent.getInt(bytes, fromIndex);
-            final int mask = SWARByteUtil.applyPatternInt(word, pattern);
+            final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
             if (mask != 0) {
                 return fromIndex + Integer.numberOfLeadingZeros(mask);
             }
-            length -= 4;
+            fromIndex += Integer.BYTES;
         }
-        if (length == 0) {
+        if ((length & 2) != 0) {
+            if (bytes[fromIndex] == value) {
+                return fromIndex;
+            }
+            if (bytes[fromIndex + 1] == value) {
+                return fromIndex + 1;
+            }
+            fromIndex += 2;
+        }
+        if ((length & 1) != 0) {
+            if (bytes[fromIndex] == value) {
+                return fromIndex;
+            }
+            fromIndex += 1;
+        }
+        if (longCount > 0) {
+            for (int i = 0; i < longCount; ++i) {
+                final long word = PlatformDependent.getLong(bytes, fromIndex);
+                final long mask = SWARByteUtil.applyPattern(word, pattern);
+                if (mask != 0) {
+                    return fromIndex + Long.numberOfLeadingZeros(mask);
+                }
+                fromIndex += Long.BYTES;
+            }
+        }
+        return -1;
+    }
+
+    private static int unrolledFirstIndexOf0(byte[] bytes, int fromIndex, int toIndex, int value, int pattern) {
+        int offset = fromIndex;
+        if (offset - toIndex >= 4) {
+            final int word = PlatformDependent.getInt(bytes, offset);
+            final int mask = SWARByteUtil.applyPatternInt(word, pattern);
+            if (mask != 0) {
+                return offset + Integer.numberOfLeadingZeros(mask);
+            }
+            offset += Integer.BYTES;
+        }
+        if (offset == toIndex) {
             return -1;
         }
-        if (bytes[fromIndex] == value) {
-            return fromIndex;
+        if (bytes[offset] == value) {
+            return offset;
         }
-        if (length == 1) {
+        if (offset + 1 == toIndex) {
             return -1;
         }
-        if (bytes[fromIndex + 1] == value) {
-            return fromIndex + 1;
+        if (bytes[offset + 1] == value) {
+            return offset + 1;
         }
-        if (length == 2) {
+        if (offset + 2 == toIndex) {
             return -1;
         }
-        if (bytes[fromIndex + 2] == value) {
-            return fromIndex + 2;
+        if (bytes[offset + 2] == value) {
+            return offset + 2;
         }
         return -1;
     }
