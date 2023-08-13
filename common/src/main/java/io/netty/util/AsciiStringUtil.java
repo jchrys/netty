@@ -89,7 +89,7 @@ public final class AsciiStringUtil {
             }
             fromIndex += Long.BYTES;
         }
-        return unrolledFirstIndexOf0(bytes, fromIndex, toIndex, value, (int) pattern);
+        return unrolledFirstIndexOf0(bytes, fromIndex, toIndex-fromIndex, value, (int) pattern);
     }
 
     static int firstIndexOf0(byte[] bytes, int fromIndex, int toIndex, byte value) {
@@ -206,11 +206,16 @@ public final class AsciiStringUtil {
 
     private static int unrolledFirstIndexOf0(byte[] bytes, int fromIndex, int remaining, byte value, int pattern) {
         assert remaining < 8;
+        if (remaining == 0) {
+            return -1;
+        }
         int intCount = remaining & 4;
         int byteCount = remaining & 3;
-        int index = unrolledFirstIndexOf(bytes, fromIndex, byteCount, value);
-        if (index >= 0) {
-            return index;
+        if (byteCount > 0) {
+            int index = unrolledFirstIndexOf(bytes, fromIndex, byteCount, value);
+            if (index >= 0) {
+                return index;
+            }
         }
         if (intCount > 0) {
             int word = PlatformDependent.getInt(bytes, fromIndex + byteCount);
