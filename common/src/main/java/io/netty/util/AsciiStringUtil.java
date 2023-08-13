@@ -209,28 +209,83 @@ public final class AsciiStringUtil {
         if (remaining == 0) {
             return -1;
         }
-        if ((remaining & 1) != 0) {
+        if (remaining == 1) {
             if (bytes[fromIndex] == value) {
                 return fromIndex;
             }
-            fromIndex += 1;
+            return -1;
         }
-
-        if ((remaining & 2) != 0) {
+        if (remaining == 2) {
             if (bytes[fromIndex] == value) {
                 return fromIndex;
             }
             if (bytes[fromIndex + 1] == value) {
                 return fromIndex + 1;
             }
-            fromIndex += 2;
+            return -1;
         }
-        if ((remaining & 4) != 0) {
+
+        if (remaining == 3) {
+            if (bytes[fromIndex] == value) {
+                return fromIndex;
+            }
+            if (bytes[fromIndex + 1] == value) {
+                return fromIndex + 1;
+            }
+            if (bytes[fromIndex + 2] == value) {
+                return fromIndex + 2;
+            }
+            return -1;
+        }
+
+        if (remaining == 4) {
             final int word = PlatformDependent.getInt(bytes, fromIndex);
             final int mask = SWARByteUtil.applyPatternInt(word, pattern);
             if (mask != 0) {
-                return fromIndex + Integer.numberOfTrailingZeros(mask);
+                return fromIndex + Integer.numberOfLeadingZeros(mask);
             }
+            return -1;
+        }
+
+        if (remaining == 5) {
+            if (bytes[fromIndex] == value) {
+                return fromIndex;
+            }
+            final int word = PlatformDependent.getInt(bytes, fromIndex + 1);
+            final int mask = SWARByteUtil.applyPatternInt(word, pattern);
+            if (mask != 0) {
+                return fromIndex + Integer.numberOfLeadingZeros(mask);
+            }
+            return -1;
+        }
+
+        if (remaining == 6) {
+            if (bytes[fromIndex] == value) {
+                return fromIndex;
+            }
+            if (bytes[fromIndex + 1] == value) {
+                return fromIndex + 1;
+            }
+            final int word = PlatformDependent.getInt(bytes, fromIndex + 2);
+            final int mask = SWARByteUtil.applyPatternInt(word, pattern);
+            if (mask != 0) {
+                return fromIndex + Integer.numberOfLeadingZeros(mask);
+            }
+            return -1;
+        }
+        if (bytes[fromIndex] == value) {
+            return fromIndex;
+        }
+        if (bytes[fromIndex + 1] == value) {
+            return fromIndex + 1;
+        }
+        if (bytes[fromIndex + 2] == value) {
+            return fromIndex + 2;
+        }
+        final int word = PlatformDependent.getInt(bytes, fromIndex + 3);
+        final int mask = SWARByteUtil.applyPatternInt(word, pattern);
+        if (mask != 0) {
+            return fromIndex + Integer.numberOfLeadingZeros(mask);
         }
         return -1;
     }
