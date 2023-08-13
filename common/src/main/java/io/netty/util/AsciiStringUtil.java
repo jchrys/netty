@@ -41,10 +41,22 @@ public final class AsciiStringUtil {
             }
             fromIndex += Long.BYTES;
         }
-        return unrolledFirstIndexOf(bytes, fromIndex, length & 7, value);
+        return unrolledFirstIndexOf(bytes, fromIndex, length & 7, value, (int) pattern);
     }
 
-    private static int unrolledFirstIndexOf(byte[] bytes, int fromIndex, int length, byte value) {
+    private static int unrolledFirstIndexOf(byte[] bytes, int fromIndex, int length, byte value, int pattern) {
+        if (length == 0) {
+            return -1;
+        }
+        if (length >= 4) {
+            final int word = PlatformDependent.getInt(bytes, fromIndex);
+            final int mask = SWARByteUtil.applyPatternInt(word, pattern);
+            if (mask != 0) {
+                return fromIndex + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
+            }
+            fromIndex += Integer.BYTES;
+            length -= Integer.BYTES;
+        }
         if (length == 0) {
             return -1;
         }
@@ -63,32 +75,7 @@ public final class AsciiStringUtil {
         if (PlatformDependent.getByte(bytes, fromIndex + 2) == value) {
             return fromIndex + 2;
         }
-        if (length == 3) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 3) == value) {
-            return fromIndex + 3;
-        }
-        if (length == 4) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 4) == value) {
-            return fromIndex + 4;
-        }
-        if (length == 5) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 5) == value) {
-            return fromIndex + 5;
-        }
-        if (length == 6) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 6) == value) {
-            return fromIndex + 6;
-        }
         return -1;
-
     }
 
     static int firstIndexOf0(byte[] bytes, int fromIndex, int toIndex, byte value) {
