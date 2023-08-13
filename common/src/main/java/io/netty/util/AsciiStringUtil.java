@@ -21,54 +21,6 @@ import io.netty.util.internal.PlatformDependent;
  */
 public final class AsciiStringUtil {
 
-    private static int unrolledFirstIndexOf(byte[] bytes, int fromIndex, int length, byte target) {
-        assert length >= 0 && length < 8;
-        if (length == 0) {
-            return -1;
-        }
-
-        if (bytes[fromIndex] == target) {
-            return fromIndex;
-        }
-        if (length == 1) {
-            return -1;
-        }
-        if (bytes[fromIndex + 1] == target) {
-            return fromIndex + 1;
-        }
-        if (length == 2) {
-            return -1;
-        }
-        if (bytes[fromIndex + 2] == target) {
-            return fromIndex + 2;
-        }
-        if (length == 3) {
-            return -1;
-        }
-        if (bytes[fromIndex + 3] == target) {
-            return fromIndex + 3;
-        }
-        if (length == 4) {
-            return -1;
-        }
-        if (bytes[fromIndex + 4] == target) {
-            return fromIndex + 4;
-        }
-        if (length == 5) {
-            return -1;
-        }
-        if (bytes[fromIndex + 5] == target) {
-            return fromIndex + 5;
-        }
-        if (length == 6) {
-            return -1;
-        }
-        if (bytes[fromIndex + 6] == target) {
-            return fromIndex + 6;
-        }
-        return -1;
-    }
-
     static int firstIndexOf(byte[] bytes, int fromIndex, int toIndex, byte value) {
         if (!PlatformDependent.isUnaligned()) {
             for (int idx = fromIndex; idx < toIndex; ++idx) {
@@ -85,7 +37,7 @@ public final class AsciiStringUtil {
             final int word = PlatformDependent.getInt(bytes, fromIndex);
             final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
             if (mask != 0) {
-                return fromIndex + Integer.numberOfLeadingZeros(mask);
+                return fromIndex + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
             }
             fromIndex += Integer.BYTES;
         }
@@ -108,7 +60,7 @@ public final class AsciiStringUtil {
             final long word = PlatformDependent.getLong(bytes, fromIndex);
             final long mask = SWARByteUtil.applyPattern(word, pattern);
             if (mask != 0) {
-                return fromIndex + Long.numberOfLeadingZeros(mask);
+                return fromIndex + SWARByteUtil.getIndex(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
             }
             fromIndex += Long.BYTES;
         }
@@ -131,186 +83,51 @@ public final class AsciiStringUtil {
             final long word = PlatformDependent.getLong(bytes, fromIndex);
             final long mask = SWARByteUtil.applyPattern(word, pattern);
             if (mask != 0) {
-                return fromIndex + Long.numberOfLeadingZeros(mask);
+                return fromIndex + SWARByteUtil.getIndex(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
             }
             fromIndex += Long.BYTES;
         }
-        if (toIndex  - 4 >= fromIndex) {
-            final int word = PlatformDependent.getInt(bytes, fromIndex);
-            final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
-            if (mask != 0) {
-                return fromIndex + Integer.numberOfLeadingZeros(mask);
-            }
-            fromIndex += Integer.BYTES;
-        }
-        final int remaining = toIndex - fromIndex;
-        if (remaining == 0) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex) == value) {
-            return fromIndex;
-        }
-        if (remaining == 1) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 1) == value) {
-            return fromIndex + 1;
-        }
-        if (remaining == 2) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 2) == value) {
-            return fromIndex + 2;
-        }
-        return -1;
-    }
-
-    static int firstIndexOf1(byte[] bytes, int fromIndex, int toIndex, byte value) {
-        if (!PlatformDependent.isUnaligned()) {
-            for (int idx = fromIndex; idx < toIndex; ++idx) {
-                if (bytes[idx] == value) {
-                    return idx;
-                }
-            }
-            return -1;
-        }
-
-        final int length = toIndex - fromIndex;
-
-        final int longCount = length >>> 3;
-        if (longCount > 0) {
-            final boolean isNative = PlatformDependent.BIG_ENDIAN_NATIVE_ORDER;
-            final long pattern = SWARByteUtil.compilePattern(value);
-            for (int i = 0; i < longCount; ++i) {
-                final long word = PlatformDependent.getLong(bytes, fromIndex);
-                final int mask = SWARByteUtil.firstAnyPattern(word, pattern, isNative);
-                if (mask < Long.BYTES) {
-                    return fromIndex + mask;
-                }
-                fromIndex += Long.BYTES;
-            }
-        }
-
-        return unrolledFirstIndexOf(bytes, fromIndex, toIndex - fromIndex, value);
-    }
-
-    static int firstIndexOf2(byte[] bytes, int fromIndex, int toIndex, byte value) {
-        if (!PlatformDependent.isUnaligned()) {
-            for (int idx = fromIndex; idx < toIndex; ++idx) {
-                if (bytes[idx] == value) {
-                    return idx;
-                }
-            }
-            return -1;
-        }
-
-        final int length = toIndex - fromIndex;
         final int byteCount = length & 7;
-        if (byteCount > 0) {
-            final int index = unrolledFirstIndexOf(bytes, fromIndex, toIndex - fromIndex, value);
-            if (index >= 0) {
-                return index;
-            }
-            fromIndex += byteCount;
-        }
-        final int longCount = length >>> 3;
-        if (longCount > 0) {
-            final boolean isNative = PlatformDependent.BIG_ENDIAN_NATIVE_ORDER;
-            final long pattern = SWARByteUtil.compilePattern(value);
-            for (int i = 0; i < longCount; ++i) {
-                final long word = PlatformDependent.getLong(bytes, fromIndex);
-                final int mask = SWARByteUtil.firstAnyPattern(word, pattern, isNative);
-                if (mask < Long.BYTES) {
-                    return fromIndex + mask;
-                }
-                fromIndex += Long.BYTES;
-            }
-        }
-        return -1;
+        return unrolledFirstIndexOf(bytes, fromIndex, byteCount, value, (int) pattern);
     }
 
-    private static int unrolledFirstIndexOf0(byte[] bytes, int fromIndex, int remaining, byte value, int pattern) {
-        assert remaining < 8;
-        if (remaining == 0) {
+    private static int unrolledFirstIndexOf(byte[] bytes, int fromIndex, int length, byte value, int pattern) {
+        if (length == 0) {
             return -1;
         }
-
-        if (remaining == 1) {
-            if (bytes[fromIndex] == value) {
+        if (length < 4) {
+            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
                 return fromIndex;
             }
-            return -1;
-        }
-        if (remaining == 2) {
-            if (bytes[fromIndex] == value) {
-                return fromIndex;
+            if (length == 1) {
+                return -1;
             }
-            if (bytes[fromIndex + 1] == value) {
+            if (PlatformDependent.getByte(bytes, fromIndex + 1) == value) {
                 return fromIndex + 1;
             }
-            return -1;
-        }
-        if (remaining == 3) {
-            if (bytes[fromIndex] == value) {
-                return fromIndex;
+            if (length == 2) {
+                return -1;
             }
-            if (bytes[fromIndex + 1] == value) {
-                return fromIndex + 1;
-            }
-            if (bytes[fromIndex + 2] == value) {
+            if (PlatformDependent.getByte(bytes, fromIndex + 2) == value) {
                 return fromIndex + 2;
             }
             return -1;
         }
-        if (remaining == 4) {
+        {
             final int word = PlatformDependent.getInt(bytes, fromIndex);
             final int mask = SWARByteUtil.applyPatternInt(word, pattern);
             if (mask != 0) {
-                return fromIndex + Integer.numberOfLeadingZeros(mask);
+                return fromIndex + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
             }
-            return -1;
         }
-        if (remaining == 5) {
-            if (bytes[fromIndex] == value) {
-                return fromIndex;
-            }
-            final int word = PlatformDependent.getInt(bytes, fromIndex + 1);
-            final int mask = SWARByteUtil.applyPatternInt(word, pattern);
-            if (mask != 0) {
-                return fromIndex + Integer.numberOfLeadingZeros(mask);
-            }
-            return -1;
-        }
-        if (remaining == 6) {
-            if (bytes[fromIndex] == value) {
-                return fromIndex;
-            }
-            if (bytes[fromIndex + 1] == value) {
-                return fromIndex + 1;
-            }
-            final int word = PlatformDependent.getInt(bytes, fromIndex + 2);
-            final int mask = SWARByteUtil.applyPatternInt(word, pattern);
-            if (mask != 0) {
-                return fromIndex + Integer.numberOfLeadingZeros(mask);
-            }
-            return -1;
-        }
-        if (bytes[fromIndex] == value) {
-            return fromIndex;
-        }
-        if (bytes[fromIndex + 1] == value) {
-            return fromIndex + 1;
-        }
-        if (bytes[fromIndex + 2] == value) {
-            return fromIndex + 2;
-        }
-        final int word = PlatformDependent.getInt(bytes, fromIndex + 3);
+        final int word = PlatformDependent.getInt(bytes, fromIndex + length - 4);
         final int mask = SWARByteUtil.applyPatternInt(word, pattern);
         if (mask != 0) {
-            return fromIndex + Integer.numberOfLeadingZeros(mask);
+            return fromIndex + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
         }
         return -1;
     }
+
 
 
     static boolean isLowerCase(byte value) {
@@ -509,13 +326,13 @@ public final class AsciiStringUtil {
             return ~(tmp | input | 0x7F7F7F7F);
         }
 
-        private static int getIndex(long mask) {
-            return PlatformDependent.BIG_ENDIAN_NATIVE_ORDER? Long.numberOfLeadingZeros(mask) >>> 3 :
+        private static int getIndex(long mask, boolean isBigEndian) {
+            return isBigEndian? Long.numberOfLeadingZeros(mask) >>> 3 :
                     Long.numberOfTrailingZeros(mask) >>> 3;
         }
 
-        private static int getIndexInt(int mask) {
-            return PlatformDependent.BIG_ENDIAN_NATIVE_ORDER? Integer.numberOfLeadingZeros(mask) >>> 3 :
+        private static int getIndexInt(int mask, boolean isBigEndian) {
+            return isBigEndian? Integer.numberOfLeadingZeros(mask) >>> 3 :
                     Integer.numberOfTrailingZeros(mask) >>> 3;
         }
 
