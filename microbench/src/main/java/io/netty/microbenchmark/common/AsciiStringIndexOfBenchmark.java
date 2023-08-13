@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 @Threads(1)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Fork(1)
+@Fork(2)
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 8, time = 1)
 @State(Scope.Benchmark)
