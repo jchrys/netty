@@ -49,7 +49,7 @@ public final class AsciiStringUtil {
         int word, mask;
         switch (length) {
         case 0:
-            return - 1;
+            return -1;
         case 7:
             word = PlatformDependent.getInt(bytes, fromIndex);
             mask = SWARByteUtil.applyPatternInt(word, pattern);
@@ -58,13 +58,13 @@ public final class AsciiStringUtil {
             }
             offset += 4;
         case 3:
-            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
+            if (bytes[fromIndex + offset] == value) {
                 return fromIndex + offset;
             }
-            if (PlatformDependent.getByte(bytes, fromIndex + offset + 1) == value) {
+            if (bytes[fromIndex + offset + 1] == value) {
                 return fromIndex + offset + 1;
             }
-            if (PlatformDependent.getByte(bytes, fromIndex + offset + 2) == value) {
+            if (bytes[fromIndex + offset + 2] == value) {
                 return fromIndex + offset + 2;
             }
             return -1;
@@ -76,10 +76,10 @@ public final class AsciiStringUtil {
             }
             offset += 4;
         case 2:
-            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
+            if (bytes[fromIndex + offset] == value) {
                 return fromIndex + offset;
             }
-            if (PlatformDependent.getByte(bytes, fromIndex + offset + 1) == value) {
+            if (bytes[fromIndex + offset + 1] == value) {
                 return fromIndex + offset + 1;
             }
             return -1;
@@ -91,7 +91,7 @@ public final class AsciiStringUtil {
             }
             offset += 4;
         case 1:
-            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
+            if (bytes[fromIndex + offset] == value) {
                 return fromIndex + offset;
             }
             return -1;
