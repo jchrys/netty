@@ -47,6 +47,21 @@ public final class AsciiStringUtil {
     private static int unrolledFirstIndexOf(byte[] bytes, int fromIndex, int length, byte value, int pattern) {
         int offset = 0;
         switch (length) {
+        case 3:
+            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
+                return fromIndex + offset;
+            }
+            ++offset;
+        case 2:
+            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
+                return fromIndex + offset;
+            }
+            ++offset;
+        case 1:
+            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
+                return fromIndex + offset;
+            }
+            return -1;
         case 7:
             if (PlatformDependent.getByte(bytes, fromIndex) == value) {
                 return fromIndex;
@@ -67,21 +82,6 @@ public final class AsciiStringUtil {
             final int mask = SWARByteUtil.applyPatternInt(word, pattern);
             if (mask != 0) {
                 return fromIndex + offset + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
-            }
-            return -1;
-        case 3:
-            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
-                return fromIndex + offset;
-            }
-            ++offset;
-        case 2:
-            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
-                return fromIndex + offset;
-            }
-            ++offset;
-        case 1:
-            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
-                return fromIndex + offset;
             }
         }
         return -1;
