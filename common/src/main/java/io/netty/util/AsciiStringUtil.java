@@ -110,10 +110,32 @@ public final class AsciiStringUtil {
         return word | mask >>> 2;
     }
 
+    private static long toLowerCasePolly(long word) {
+        long rotated = word & 0x7f7f7f7f7f7f7f7fL;
+        rotated += 0x2525252525252525L;
+        rotated &= 0x7f7f7f7f7f7f7f7fL;
+        rotated += 0x1a1a1a1a1a1a1a1aL;
+        rotated &= ~word;
+        rotated >>= 2;
+        rotated &= 0x2020202020202020L;
+        return word + rotated;
+    }
+
     private static int toLowerCase(int word) {
         final int mask = SWARByteUtil.applyPatternRange(word, (int) SWARByteUtil.UPPER_CASE_PATTERN,
                                                         (int) SWARByteUtil.UPPER_CASE_RANGE_PATTERN);
         return word | mask >>> 2;
+    }
+
+    private static int toLowerCasePolly(int word) {
+        int rotated = word & 0x7f7f7f7f;
+        rotated += 0x25252525;
+        rotated &= 0x7f7f7f7f;
+        rotated += 0x1a1a1a1a;
+        rotated &= ~word;
+        rotated >>= 2;
+        rotated &= 0x20202020;
+        return word + rotated;
     }
 
     private static long toUpperCase(long word) {
@@ -257,6 +279,45 @@ public final class AsciiStringUtil {
         if ((length & 4) != 0) {
             final int word = PlatformDependent.getInt(src, srcPos);
             PlatformDependent.putInt(dest, destPos, toLowerCase(word));
+            srcPos += Integer.BYTES;
+            destPos += Integer.BYTES;
+        }
+        if ((length & 2) != 0) {
+            PlatformDependent.putByte(dest, destPos,
+                                      toLowerCase(PlatformDependent.getByte(src, srcPos)));
+            PlatformDependent.putByte(dest, destPos + 1,
+                                      toLowerCase(PlatformDependent.getByte(src, srcPos + 1)));
+            srcPos += 2;
+            destPos += 2;
+        }
+        if ((length & 1) != 0) {
+            PlatformDependent.putByte(dest, destPos,
+                                      toLowerCase(PlatformDependent.getByte(src, srcPos)));
+        }
+    }
+
+    static void toLowerCasePolly(byte[] src, int srcPos, byte[] dest, int destPos, int length) {
+        if (!PlatformDependent.isUnaligned()) {
+            for (int i = 0; i < length; ++i) {
+                dest[destPos++] = toLowerCase(src[srcPos++]);
+            }
+            return;
+        }
+
+        final int longCount = length >>> 3;
+        for (int i = 0; i < longCount; ++i) {
+            final long word = PlatformDependent.getLong(src, srcPos);
+            PlatformDependent.putLong(dest, destPos, toLowerCasePolly(word));
+            srcPos += Long.BYTES;
+            destPos += Long.BYTES;
+        }
+        unrollToLowerCasePolly(src, srcPos, dest, destPos, length & 7);
+    }
+
+    private static void unrollToLowerCasePolly(byte[] src, int srcPos, byte[] dest, int destPos, int length) {
+        if ((length & 4) != 0) {
+            final int word = PlatformDependent.getInt(src, srcPos);
+            PlatformDependent.putInt(dest, destPos, toLowerCasePolly(word));
             srcPos += Integer.BYTES;
             destPos += Integer.BYTES;
         }

@@ -94,7 +94,10 @@ public class AsciiStringUtilCaseConversionBenchmark extends AbstractMicrobenchma
     }
 
     @Benchmark
-    public boolean containsUpperCase() {
-        return AsciiStringUtil.containsUpperCase(getData(), 0, size);
+    public byte[] toLowerCasePolly() {
+        byte[] ret = new byte[size];
+        AsciiStringUtil.toLowerCasePolly(getData(), 0, ret, 0, size);
+        return ret;
     }
+
 }
