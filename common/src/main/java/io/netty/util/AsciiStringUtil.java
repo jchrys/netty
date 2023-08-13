@@ -135,7 +135,7 @@ public final class AsciiStringUtil {
             }
             fromIndex += Long.BYTES;
         }
-        if ((length & 4) != 0) {
+        if (toIndex  - 4 >= fromIndex) {
             final int word = PlatformDependent.getInt(bytes, fromIndex);
             final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
             if (mask != 0) {
@@ -143,20 +143,24 @@ public final class AsciiStringUtil {
             }
             fromIndex += Integer.BYTES;
         }
-        if ((length & 2) != 0) {
-            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
-                return fromIndex;
-            }
-            if (PlatformDependent.getByte(bytes, fromIndex + 1) == value) {
-                return fromIndex + 1;
-            }
-            fromIndex += 2;
+        final int remaining = toIndex - fromIndex;
+        if (remaining == 0) {
+            return -1;
         }
-        if ((length & 1) != 0) {
-            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
-                return fromIndex;
-            }
-            fromIndex += 1;
+        if (PlatformDependent.getByte(bytes, fromIndex) == value) {
+            return fromIndex;
+        }
+        if (remaining == 1) {
+            return -1;
+        }
+        if (PlatformDependent.getByte(bytes, fromIndex + 1) == value) {
+            return fromIndex + 1;
+        }
+        if (remaining == 2) {
+            return -1;
+        }
+        if (PlatformDependent.getByte(bytes, fromIndex + 2) == value) {
+            return fromIndex + 2;
         }
         return -1;
     }
