@@ -223,7 +223,7 @@ public final class AsciiStringUtil {
             if (bytes[fromIndex + 1] == value) {
                 return fromIndex + 1;
             }
-            fromIndex += 1;
+            fromIndex += 2;
         }
         if ((remaining & 4) != 0) {
             final int word = PlatformDependent.getInt(bytes, fromIndex);
