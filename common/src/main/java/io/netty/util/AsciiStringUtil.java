@@ -33,7 +33,7 @@ public final class AsciiStringUtil {
         final int length = toIndex - fromIndex;
         final int longCount = length >>> 3;
         final long pattern = SWARByteUtil.compilePattern(value);
-        for (int i = longCount; i >= 0; --i) {
+        for (int i = longCount; i > 0; --i) {
             final long word = PlatformDependent.getLong(bytes, fromIndex);
             final long mask = SWARByteUtil.applyPattern(word, pattern);
             if (mask != 0) {
