@@ -108,7 +108,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
     }
 
     @Benchmark
-    public int indexOf0() {
+    public int indexOf2() {
         return getData().indexOf2((char) needleByte, 0);
     }
 }
