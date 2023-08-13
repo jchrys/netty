@@ -45,33 +45,44 @@ public final class AsciiStringUtil {
     }
 
     private static int unrolledFirstIndexOf(byte[] bytes, int fromIndex, int length, byte value, int pattern) {
-        if ((length & 4) != 0) {
+        switch (length) {
+        case 7:
+            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
+                return fromIndex;
+            }
+            ++fromIndex;
+        case 6:
+            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
+                return fromIndex;
+            }
+            ++fromIndex;
+        case 5:
+            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
+                return fromIndex;
+            }
+            ++fromIndex;
+        case 4:
             final int word = PlatformDependent.getInt(bytes, fromIndex);
             final int mask = SWARByteUtil.applyPatternInt(word, pattern);
             if (mask != 0) {
                 return fromIndex + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
             }
-            fromIndex += Integer.BYTES;
-        }
-
-        final int byteCount = length &3;
-        if (byteCount == 0) {
             return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex) == value) {
-            return fromIndex;
-        }
-        if (byteCount == 1) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 1) == value) {
-            return fromIndex + 1;
-        }
-        if (byteCount == 2) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 2) == value) {
-            return fromIndex + 2;
+        case 3:
+            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
+                return fromIndex;
+            }
+            ++fromIndex;
+        case 2:
+            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
+                return fromIndex;
+            }
+            ++fromIndex;
+        case 1:
+            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
+                return fromIndex;
+            }
+            break;
         }
         return -1;
     }
