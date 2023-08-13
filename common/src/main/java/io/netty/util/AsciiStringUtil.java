@@ -204,9 +204,10 @@ public final class AsciiStringUtil {
         return -1;
     }
 
-    private static int unrolledFirstIndexOf0(byte[] bytes, int fromIndex, int toIndex, byte value, int pattern) {
-        int intCount = toIndex - fromIndex & 8;
-        int byteCount = toIndex - fromIndex & 7;
+    private static int unrolledFirstIndexOf0(byte[] bytes, int fromIndex, int remaining, byte value, int pattern) {
+        assert remaining < 8;
+        int intCount = remaining & 4;
+        int byteCount = remaining & 3;
         int index = unrolledFirstIndexOf(bytes, fromIndex, byteCount, value);
         if (index >= 0) {
             return index;
