@@ -89,7 +89,7 @@ public final class AsciiStringUtil {
             }
             fromIndex += Long.BYTES;
         }
-        return unrolledFirstIndexOf0(bytes, fromIndex, toIndex, value, (int)pattern);
+        return unrolledFirstIndexOf0(bytes, fromIndex, toIndex - fromIndex & 7, value, (int) pattern);
     }
 
     static int firstIndexOf0(byte[] bytes, int fromIndex, int toIndex, byte value) {
@@ -204,36 +204,19 @@ public final class AsciiStringUtil {
         return -1;
     }
 
-    private static int unrolledFirstIndexOf0(byte[] bytes, int fromIndex, int toIndex, int value, int pattern) {
-        if (toIndex == fromIndex) {
-            return -1;
+    private static int unrolledFirstIndexOf0(byte[] bytes, int fromIndex, int toIndex, byte value, int pattern) {
+        int intCount = toIndex - fromIndex & 8;
+        int byteCount = toIndex - fromIndex & 7;
+        int index = unrolledFirstIndexOf(bytes, fromIndex, byteCount, value);
+        if (index >= 0) {
+            return index;
         }
-        int offset = fromIndex;
-        if (offset - toIndex >= 4) {
-            final int word = PlatformDependent.getInt(bytes, offset);
-            final int mask = SWARByteUtil.applyPatternInt(word, pattern);
+        if (intCount > 0) {
+            int word = PlatformDependent.getInt(bytes, fromIndex + byteCount);
+            int mask = SWARByteUtil.applyPatternInt(word, pattern);
             if (mask != 0) {
-                return offset + Integer.numberOfLeadingZeros(mask);
+                return fromIndex + byteCount + Integer.numberOfLeadingZeros(mask);
             }
-            offset += Integer.BYTES;
-        }
-        if (offset == toIndex) {
-            return -1;
-        }
-        if (bytes[offset] == value) {
-            return offset;
-        }
-        if (offset + 1 == toIndex) {
-            return -1;
-        }
-        if (bytes[offset + 1] == value) {
-            return offset + 1;
-        }
-        if (offset + 2 == toIndex) {
-            return -1;
-        }
-        if (bytes[offset + 2] == value) {
-            return offset + 2;
         }
         return -1;
     }
