@@ -104,7 +104,7 @@ public final class AsciiStringUtil {
         return value >= 'A' && value <= 'Z';
     }
 
-    private static long toLowerCase(long word) {
+    static long toLowerCase(long word) {
         long mask = SWARByteUtil.applyPatternRange(word, SWARByteUtil.UPPER_CASE_PATTERN,
                                                    SWARByteUtil.UPPER_CASE_RANGE_PATTERN);
         return word | mask >>> 2;
