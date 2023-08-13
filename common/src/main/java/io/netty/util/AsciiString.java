@@ -749,6 +749,43 @@ public final class AsciiString implements CharSequence, Comparable<CharSequence>
         }
         return index - offset;
     }
+    public int indexOf1(char ch, int start) {
+        if (ch > MAX_CHAR_VALUE) {
+            return INDEX_NOT_FOUND;
+        }
+
+        if (start < 0) {
+            start = 0;
+        }
+
+        final byte chAsByte = c2b0(ch);
+        final int fromIndex = start + offset;
+        final int toIndex = offset + length;
+        final int index = AsciiStringUtil.firstIndexOf1(value, fromIndex, toIndex, chAsByte);
+        if (index < 0) {
+            return INDEX_NOT_FOUND;
+        }
+        return index - offset;
+    }
+
+    public int indexOf2(char ch, int start) {
+        if (ch > MAX_CHAR_VALUE) {
+            return INDEX_NOT_FOUND;
+        }
+
+        if (start < 0) {
+            start = 0;
+        }
+
+        final byte chAsByte = c2b0(ch);
+        final int fromIndex = start + offset;
+        final int toIndex = offset + length;
+        final int index = AsciiStringUtil.firstIndexOf2(value, fromIndex, toIndex, chAsByte);
+        if (index < 0) {
+            return INDEX_NOT_FOUND;
+        }
+        return index - offset;
+    }
 
     /**
      * Searches in this string for the last index of the specified string. The search for the string starts at the end

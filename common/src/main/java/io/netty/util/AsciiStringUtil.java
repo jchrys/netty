@@ -164,6 +164,70 @@ public final class AsciiStringUtil {
         return -1;
     }
 
+    static int firstIndexOf1(byte[] bytes, int fromIndex, int toIndex, byte value) {
+        if (!PlatformDependent.isUnaligned()) {
+            for (int idx = fromIndex; idx < toIndex; ++idx) {
+                if (bytes[idx] == value) {
+                    return idx;
+                }
+            }
+            return -1;
+        }
+
+        final int length = toIndex - fromIndex;
+
+        final int longCount = length >>> 3;
+        if (longCount > 0) {
+            final boolean isNative = PlatformDependent.BIG_ENDIAN_NATIVE_ORDER;
+            final long pattern = SWARByteUtil.compilePattern(value);
+            for (int i = 0; i < longCount; ++i) {
+                final long word = PlatformDependent.getLong(bytes, fromIndex);
+                final int mask = SWARByteUtil.firstAnyPattern(word, pattern, isNative);
+                if (mask < Long.BYTES) {
+                    return fromIndex + mask;
+                }
+                fromIndex += Long.BYTES;
+            }
+        }
+
+        return unrolledFirstIndexOf(bytes, fromIndex, toIndex - fromIndex, value);
+    }
+
+    static int firstIndexOf2(byte[] bytes, int fromIndex, int toIndex, byte value) {
+        if (!PlatformDependent.isUnaligned()) {
+            for (int idx = fromIndex; idx < toIndex; ++idx) {
+                if (bytes[idx] == value) {
+                    return idx;
+                }
+            }
+            return -1;
+        }
+
+        final int length = toIndex - fromIndex;
+        final int byteCount = length & 7;
+        if (byteCount > 0) {
+            final int index = unrolledFirstIndexOf(bytes, fromIndex, toIndex - fromIndex, value);
+            if (index >= 0) {
+                return index;
+            }
+            fromIndex += byteCount;
+        }
+        final int longCount = length >>> 3;
+        if (longCount > 0) {
+            final boolean isNative = PlatformDependent.BIG_ENDIAN_NATIVE_ORDER;
+            final long pattern = SWARByteUtil.compilePattern(value);
+            for (int i = 0; i < longCount; ++i) {
+                final long word = PlatformDependent.getLong(bytes, fromIndex);
+                final int mask = SWARByteUtil.firstAnyPattern(word, pattern, isNative);
+                if (mask < Long.BYTES) {
+                    return fromIndex + mask;
+                }
+                fromIndex += Long.BYTES;
+            }
+        }
+        return -1;
+    }
+
     private static int unrolledFirstIndexOf0(byte[] bytes, int fromIndex, int toIndex, int value, int pattern) {
         int offset = fromIndex;
         if (offset - toIndex >= 4) {
