@@ -113,21 +113,36 @@ public final class AsciiStringUtil {
             }
             return -1;
         }
-        {
-            final int word = PlatformDependent.getInt(bytes, fromIndex);
-            final int mask = SWARByteUtil.applyPatternInt(word, pattern);
-            if (mask != 0) {
-                return fromIndex + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
-            }
+        int word = PlatformDependent.getInt(bytes, fromIndex);
+        int mask = SWARByteUtil.applyPatternInt(word, pattern);
+        if (mask != 0) {
+            return fromIndex + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
         }
-        final int word = PlatformDependent.getInt(bytes, fromIndex + length - 4);
-        final int mask = SWARByteUtil.applyPatternInt(word, pattern);
+        if (length == 4) {
+            return -1;
+        }
+        if (length == 5) {
+            if (PlatformDependent.getByte(bytes, fromIndex + 4) == value) {
+                return fromIndex + 4;
+            }
+            return -1;
+        }
+        if (length == 6) {
+            if (PlatformDependent.getByte(bytes, fromIndex + 4) == value) {
+                return fromIndex + 4;
+            }
+            if (PlatformDependent.getByte(bytes, fromIndex + 5) == value) {
+                return fromIndex + 4;
+            }
+            return -1;
+        }
+        word = PlatformDependent.getInt(bytes, fromIndex + 3);
+        mask = SWARByteUtil.applyPatternInt(word, pattern);
         if (mask != 0) {
             return fromIndex + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
         }
         return -1;
     }
-
 
 
     static boolean isLowerCase(byte value) {
