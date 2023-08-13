@@ -88,7 +88,7 @@ public final class AsciiStringUtil {
                 final long word = PlatformDependent.getLong(bytes, fromIndex);
                 final long mask = SWARByteUtil.applyPattern(word, pattern);
                 if (mask != 0) {
-                    return fromIndex + Long.numberOfLeadingZeros(mask);
+                    return fromIndex + SWARByteUtil.getIndex(mask);
                 }
                 fromIndex += Long.BYTES;
             }
@@ -97,7 +97,7 @@ public final class AsciiStringUtil {
             final int word = PlatformDependent.getInt(bytes, fromIndex);
             final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
             if (mask != 0) {
-                return fromIndex + Integer.numberOfLeadingZeros(mask);
+                return fromIndex + SWARByteUtil.getIndexInt(mask);
             }
             fromIndex += Integer.BYTES;
         }
@@ -512,6 +512,16 @@ public final class AsciiStringUtil {
             int input = word ^ pattern;
             int tmp = (input & 0x7F7F7F7F) + 0x7F7F7F7F;
             return ~(tmp | input | 0x7F7F7F7F);
+        }
+
+        private static int getIndex(long mask) {
+            return PlatformDependent.BIG_ENDIAN_NATIVE_ORDER ? Long.numberOfLeadingZeros(mask) >>> 3 :
+                    Long.numberOfTrailingZeros(mask) >>> 3;
+        }
+
+        private static int getIndexInt(int mask) {
+            return PlatformDependent.BIG_ENDIAN_NATIVE_ORDER ? Integer.numberOfLeadingZeros(mask) >>> 3 :
+                    Integer.numberOfTrailingZeros(mask) >>> 3;
         }
 
         public static int firstAnyPattern(long word, long pattern, boolean leading) {
