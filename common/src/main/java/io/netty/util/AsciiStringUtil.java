@@ -91,8 +91,8 @@ public final class AsciiStringUtil {
                 fromIndex += Long.BYTES;
             }
         }
-        final int byteCount = length & 7;
-        if (byteCount >= 4) {
+
+        if ((length & 4) != 0) {
             final int word = PlatformDependent.getInt(bytes, fromIndex);
             final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
             if (mask != 0) {
@@ -100,19 +100,21 @@ public final class AsciiStringUtil {
             }
             fromIndex += Integer.BYTES;
         }
-        if (byteCount == 0 || byteCount == 4) {
+
+        final int remaining = length & 3;
+        if (remaining == 0) {
             return -1;
         }
         if (bytes[fromIndex] == value) {
             return fromIndex;
         }
-        if (byteCount == 1 || byteCount == 5) {
+        if (remaining == 1) {
             return -1;
         }
         if (bytes[fromIndex + 1] == value) {
             return fromIndex + 1;
         }
-        if (byteCount == 2 || byteCount == 6) {
+        if (remaining == 2) {
             return -1;
         }
         if (bytes[fromIndex + 2] == value) {
