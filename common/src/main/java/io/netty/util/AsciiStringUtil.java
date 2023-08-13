@@ -92,6 +92,52 @@ public final class AsciiStringUtil {
         return -1;
     }
 
+    static int firstIndexOf0(byte[] bytes, int fromIndex, int toIndex, byte value) {
+        if (!PlatformDependent.isUnaligned()) {
+            for (int idx = fromIndex; idx < toIndex; ++idx) {
+                if (bytes[idx] == value) {
+                    return idx;
+                }
+            }
+            return -1;
+        }
+        final int length = toIndex - fromIndex;
+        final int longCount = length >>> 3;
+        final long pattern = SWARByteUtil.compilePattern(value);
+        if ((length & 4) != 0) {
+            final int word = PlatformDependent.getInt(bytes, fromIndex);
+            final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
+            if (mask != 0) {
+                return fromIndex + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
+            }
+            fromIndex += Integer.BYTES;
+        }
+        if ((length & 2) != 0) {
+            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
+                return fromIndex;
+            }
+            if (PlatformDependent.getByte(bytes, fromIndex + 1) == value) {
+                return fromIndex + 1;
+            }
+            fromIndex += 2;
+        }
+        if ((length & 1) != 0) {
+            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
+                return fromIndex;
+            }
+            fromIndex += 1;
+        }
+        for (int i = 0; i < longCount; ++i) {
+            final long word = PlatformDependent.getLong(bytes, fromIndex);
+            final long mask = SWARByteUtil.applyPattern(word, pattern);
+            if (mask != 0) {
+                return fromIndex + SWARByteUtil.getIndex(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
+            }
+            fromIndex += Long.BYTES;
+        }
+        return -1;
+    }
+
     static boolean isLowerCase(byte value) {
         return value >= 'a' && value <= 'z';
     }
@@ -282,9 +328,20 @@ public final class AsciiStringUtil {
             return ~(tmp | input | 0x7F7F7F7F7F7F7F7FL);
         }
 
+        private static int applyPatternInt(int word, int pattern) {
+            int input = word ^ pattern;
+            int tmp = (input & 0x7F7F7F7F) + 0x7F7F7F7F;
+            return ~(tmp | input | 0x7F7F7F7F);
+        }
+
         private static int getIndex(long mask, boolean isBigEndian) {
             return isBigEndian? Long.numberOfLeadingZeros(mask) >>> 3 :
                     Long.numberOfTrailingZeros(mask) >>> 3;
+        }
+
+        private static int getIndexInt(int mask, boolean isBigEndian) {
+            return isBigEndian? Integer.numberOfLeadingZeros(mask) >>> 3 :
+                    Integer.numberOfTrailingZeros(mask) >>> 3;
         }
 
         public static int firstAnyPattern(long word, long pattern, boolean leading) {
