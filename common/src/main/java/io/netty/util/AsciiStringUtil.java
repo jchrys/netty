@@ -79,11 +79,9 @@ public final class AsciiStringUtil {
             return -1;
         }
         final int length = toIndex - fromIndex;
-        final int longCount = length >>> 3;
-        final boolean hasInt = (length & 4) != 0;
-        final int byteCount = length & 3;
         final long pattern = SWARByteUtil.compilePattern(value);
-        if (longCount > 0) {
+        if (length >= 8) {
+            final int longCount = length >>> 3;
             for (int i = 0; i < longCount; ++i) {
                 final long word = PlatformDependent.getLong(bytes, fromIndex);
                 final long mask = SWARByteUtil.applyPattern(word, pattern);
@@ -93,6 +91,7 @@ public final class AsciiStringUtil {
                 fromIndex += Long.BYTES;
             }
         }
+        final boolean hasInt = (length & 4) != 0;
         if (hasInt) {
             final int word = PlatformDependent.getInt(bytes, fromIndex);
             final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
@@ -101,6 +100,7 @@ public final class AsciiStringUtil {
             }
             fromIndex += Integer.BYTES;
         }
+        final int byteCount = length & 3;
         if (byteCount == 0) {
             return -1;
         }
@@ -515,12 +515,12 @@ public final class AsciiStringUtil {
         }
 
         private static int getIndex(long mask) {
-            return PlatformDependent.BIG_ENDIAN_NATIVE_ORDER ? Long.numberOfLeadingZeros(mask) >>> 3 :
+            return PlatformDependent.BIG_ENDIAN_NATIVE_ORDER? Long.numberOfLeadingZeros(mask) >>> 3 :
                     Long.numberOfTrailingZeros(mask) >>> 3;
         }
 
         private static int getIndexInt(int mask) {
-            return PlatformDependent.BIG_ENDIAN_NATIVE_ORDER ? Integer.numberOfLeadingZeros(mask) >>> 3 :
+            return PlatformDependent.BIG_ENDIAN_NATIVE_ORDER? Integer.numberOfLeadingZeros(mask) >>> 3 :
                     Integer.numberOfTrailingZeros(mask) >>> 3;
         }
 
