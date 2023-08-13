@@ -33,6 +33,15 @@ public final class AsciiStringUtil {
         final int length = toIndex - fromIndex;
         final int longCount = length >>> 3;
         final long pattern = SWARByteUtil.compilePattern(value);
+        final boolean hasInt = (length & 4) != 0;
+        if (hasInt) {
+            final int word = PlatformDependent.getInt(bytes, fromIndex);
+            final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
+            if (mask != 0) {
+                return fromIndex + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
+            }
+            fromIndex += Integer.BYTES;
+        }
         for (int i = longCount; i > 0; --i) {
             final long word = PlatformDependent.getLong(bytes, fromIndex);
             final long mask = SWARByteUtil.applyPattern(word, pattern);
@@ -41,15 +50,7 @@ public final class AsciiStringUtil {
             }
             fromIndex += Long.BYTES;
         }
-        if ((length &4) != 0) {
-            final int word = PlatformDependent.getInt(bytes, fromIndex);
-            final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
-            if (mask != 0) {
-                return fromIndex + SWARByteUtil.getIndex(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
-            }
-            fromIndex += Integer.BYTES;
-        }
-        return unrolledFirstIndexOf(bytes, fromIndex, length & 3, value);
+        return unrolledFirstIndexOf(bytes, fromIndex, length & 7, value);
     }
 
     private static int unrolledFirstIndexOf(byte[] bytes, int fromIndex, int length, byte value) {
