@@ -81,46 +81,15 @@ public final class AsciiStringUtil {
         final int length = toIndex - fromIndex;
         final int longCount = length >>> 3;
         final long pattern = SWARByteUtil.compilePattern(value);
-        if (longCount > 0) {
-            for (int i = 0; i < longCount; ++i) {
-                final long word = PlatformDependent.getLong(bytes, fromIndex);
-                final long mask = SWARByteUtil.applyPattern(word, pattern);
-                if (mask != 0) {
-                    return fromIndex + Long.numberOfLeadingZeros(mask);
-                }
-                fromIndex += Long.BYTES;
-            }
-        }
-        if (toIndex == fromIndex) {
-            return -1;
-        }
-        if (toIndex - fromIndex >= 4) {
-            final int word = PlatformDependent.getInt(bytes, fromIndex);
-            final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
+        for (int i = 0; i < longCount; ++i) {
+            final long word = PlatformDependent.getLong(bytes, fromIndex);
+            final long mask = SWARByteUtil.applyPattern(word, pattern);
             if (mask != 0) {
-                return fromIndex + Integer.numberOfLeadingZeros(mask);
+                return fromIndex + Long.numberOfLeadingZeros(mask);
             }
-            fromIndex += Integer.BYTES;
+            fromIndex += Long.BYTES;
         }
-        if (toIndex == fromIndex) {
-            return -1;
-        }
-        if (bytes[fromIndex] == value) {
-            return fromIndex;
-        }
-        if (fromIndex + 1 == toIndex) {
-            return -1;
-        }
-        if (bytes[fromIndex + 1] == value) {
-            return fromIndex + 1;
-        }
-        if (fromIndex + 2 == toIndex) {
-            return -1;
-        }
-        if (bytes[fromIndex + 2] == value) {
-            return fromIndex + 2;
-        }
-        return -1;
+        return unrolledFirstIndexOf0(bytes, fromIndex, toIndex, value, (int)pattern);
     }
 
     static int firstIndexOf0(byte[] bytes, int fromIndex, int toIndex, byte value) {
@@ -236,6 +205,9 @@ public final class AsciiStringUtil {
     }
 
     private static int unrolledFirstIndexOf0(byte[] bytes, int fromIndex, int toIndex, int value, int pattern) {
+        if (toIndex == fromIndex) {
+            return -1;
+        }
         int offset = fromIndex;
         if (offset - toIndex >= 4) {
             final int word = PlatformDependent.getInt(bytes, offset);
