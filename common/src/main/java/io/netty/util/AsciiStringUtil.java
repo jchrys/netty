@@ -33,7 +33,7 @@ public final class AsciiStringUtil {
         final int length = toIndex - fromIndex;
         final int longCount = length >>> 3;
         final long pattern = SWARByteUtil.compilePattern(value);
-        for (int i = 0; i < longCount; ++i) {
+        for (int i = longCount; i >= 0; --i) {
             final long word = PlatformDependent.getLong(bytes, fromIndex);
             final long mask = SWARByteUtil.applyPattern(word, pattern);
             if (mask != 0) {
@@ -46,43 +46,58 @@ public final class AsciiStringUtil {
 
     private static int unrolledFirstIndexOf(byte[] bytes, int fromIndex, int length, byte value, int pattern) {
         int offset = 0;
+        int word, mask;
         switch (length) {
+        case 7:
+            word = PlatformDependent.getInt(bytes, fromIndex);
+            mask = SWARByteUtil.applyPatternInt(word, pattern);
+            if (mask != 0) {
+                return fromIndex + offset + SWARByteUtil.getIndex(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
+            }
+            offset += 4;
         case 3:
             if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
                 return fromIndex + offset;
             }
-            ++offset;
+            if (PlatformDependent.getByte(bytes, fromIndex + offset + 1) == value) {
+                return fromIndex + offset + 1;
+            }
+            if (PlatformDependent.getByte(bytes, fromIndex + offset + 2) == value) {
+                return fromIndex + offset + 2;
+            }
+            return -1;
+        case 6:
+            word = PlatformDependent.getInt(bytes, fromIndex);
+            mask = SWARByteUtil.applyPatternInt(word, pattern);
+            if (mask != 0) {
+                return fromIndex + offset + SWARByteUtil.getIndex(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
+            }
+            offset += 4;
         case 2:
             if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
                 return fromIndex + offset;
             }
-            ++offset;
+            if (PlatformDependent.getByte(bytes, fromIndex + offset + 1) == value) {
+                return fromIndex + offset + 1;
+            }
+            return -1;
+        case 5:
+            word = PlatformDependent.getInt(bytes, fromIndex);
+            mask = SWARByteUtil.applyPatternInt(word, pattern);
+            if (mask != 0) {
+                return fromIndex + offset + SWARByteUtil.getIndex(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
+            }
+            offset += 4;
         case 1:
             if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
                 return fromIndex + offset;
             }
             return -1;
-        case 7:
-            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
-                return fromIndex;
-            }
-            ++offset;
-        case 6:
-            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
-                return fromIndex + offset;
-            }
-            ++offset;
-        case 5:
-            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
-                return fromIndex;
-            }
-            ++offset;
         case 4:
-            final int word = PlatformDependent.getInt(bytes, fromIndex + offset);
-            final int mask = SWARByteUtil.applyPatternInt(word, pattern);
-            if (mask != 0) {
-                return fromIndex + offset + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
+            if (PlatformDependent.getInt(bytes, fromIndex) == value) {
+                return fromIndex;
             }
+            return -1;
         }
         return -1;
     }

@@ -35,14 +35,14 @@ import java.util.concurrent.TimeUnit;
 
 @Threads(1)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Fork(2)
+@Fork(1)
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 8, time = 1)
 @State(Scope.Benchmark)
 public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
     public static Object blackhole;
 
-    @Param({ "7", "11", "16", "23", "24", "32" })
+    @Param({ "7", "11" })
     int size;
     @Param({ "11" })
     int logPermutations;
