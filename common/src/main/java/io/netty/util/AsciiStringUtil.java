@@ -104,11 +104,6 @@ public final class AsciiStringUtil {
         return value >= 'A' && value <= 'Z';
     }
 
-    static long toLowerCase(long word) {
-        long mask = SWARByteUtil.applyPatternRange(word, SWARByteUtil.UPPER_CASE_PATTERN,
-                                                   SWARByteUtil.UPPER_CASE_RANGE_PATTERN);
-        return word | mask >>> 2;
-    }
 
     private static long toUpperCase(long word) {
         long mask = SWARByteUtil.applyPatternRange(word, SWARByteUtil.LOWER_CASE_PATTERN,
@@ -118,6 +113,18 @@ public final class AsciiStringUtil {
 
     static byte toUpperCase(byte value) {
         return isLowerCase(value)? (byte) (value & ~32) : value;
+    }
+
+    static long toLowerCase(long word) {
+        final long mask = SWARByteUtil.applyPatternRange(word, SWARByteUtil.UPPER_CASE_PATTERN,
+                                                         SWARByteUtil.UPPER_CASE_RANGE_PATTERN);
+        return word | mask >>> 2;
+    }
+
+    static int toLowerCase(int word) {
+        final int mask = SWARByteUtil.applyPatternRange(word, (int) SWARByteUtil.UPPER_CASE_PATTERN,
+                                                        (int) SWARByteUtil.UPPER_CASE_RANGE_PATTERN);
+        return word | mask >>> 2;
     }
 
     static byte toLowerCase(byte value) {
@@ -200,11 +207,56 @@ public final class AsciiStringUtil {
             srcPos += Long.BYTES;
             destPos += Long.BYTES;
         }
-
         final int byteCount = length & 7;
+        ;
         for (int i = 0; i < byteCount; ++i) {
             dest[destPos++] = toLowerCase(src[srcPos++]);
         }
+    }
+
+    static void toLowerCase0(byte[] src, int srcPos, byte[] dest, int destPos, int length) {
+        if (!PlatformDependent.isUnaligned()) {
+            for (int i = 0; i < length; ++i) {
+                dest[destPos++] = toLowerCase(src[srcPos++]);
+            }
+            return;
+        }
+
+        final int longCount = length >>> 3;
+        for (int i = 0; i < longCount; ++i) {
+            final long word = PlatformDependent.getLong(src, srcPos);
+            PlatformDependent.putLong(dest, destPos, toLowerCase(word));
+            srcPos += Long.BYTES;
+            destPos += Long.BYTES;
+        }
+
+        unrolledToLowerCase0(src, srcPos, dest, destPos, length & 7);
+    }
+
+    private static void unrolledToLowerCase0(byte[] src, int srcPos, byte[] dest, int destPos, int length) {
+        if (length >= 4) {
+            final int word = PlatformDependent.getInt(src, srcPos);
+            PlatformDependent.putInt(dest, destPos, toLowerCase(word));
+            srcPos += Integer.BYTES;
+            destPos += Integer.BYTES;
+            length -= 4;
+        }
+        int byteCount = length & 3;
+        if (byteCount == 0) {
+            return;
+        }
+        PlatformDependent.putByte(dest, destPos,
+                                  toLowerCase(PlatformDependent.getByte(src, srcPos)));
+        if (byteCount == 1) {
+            return;
+        }
+        PlatformDependent.putByte(dest, destPos + 1,
+                                  toLowerCase(PlatformDependent.getByte(src, srcPos + 1)));
+        if (byteCount == 2) {
+            return;
+        }
+        PlatformDependent.putByte(dest, destPos + 2,
+                                  toLowerCase(PlatformDependent.getByte(src, srcPos + 2)));
     }
 
     static void toUpperCase(byte[] src, int srcPos, byte[] dest, int destPos, int length) {
@@ -276,8 +328,15 @@ public final class AsciiStringUtil {
         private static long applyPatternRange(long word, long lowPattern, long rangePattern) {
             long input = (word | 0x8080808080808080L) - lowPattern;
             input = ~((word | 0x7F7F7F7F7F7F7F7FL) ^ input);
-            long tmp = (input & 0x7F7F7F7F7F7F7F7FL) + rangePattern;
+            final long tmp = (input & 0x7F7F7F7F7F7F7F7FL) + rangePattern;
             return ~(tmp | input | 0x7F7F7F7F7F7F7F7FL);
+        }
+
+        private static int applyPatternRange(int word, int lowPattern, int rangePattern) {
+            int input = (word | 0x80808080) - lowPattern;
+            input = ~((word | 0x7F7F7F7F) ^ input);
+            final int tmp = (input & 0x7F7F7F7F) + rangePattern;
+            return ~(tmp | input | 0x7F7F7F7F);
         }
 
         private static long applyPattern(long word, long pattern) {
