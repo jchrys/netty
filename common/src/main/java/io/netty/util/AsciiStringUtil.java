@@ -45,44 +45,44 @@ public final class AsciiStringUtil {
     }
 
     private static int unrolledFirstIndexOf(byte[] bytes, int fromIndex, int length, byte value, int pattern) {
+        int offset = 0;
         switch (length) {
         case 7:
             if (PlatformDependent.getByte(bytes, fromIndex) == value) {
                 return fromIndex;
             }
-            ++fromIndex;
+            ++offset;
         case 6:
-            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
-                return fromIndex;
+            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
+                return fromIndex + offset;
             }
-            ++fromIndex;
+            ++offset;
         case 5:
-            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
+            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
                 return fromIndex;
             }
-            ++fromIndex;
+            ++offset;
         case 4:
-            final int word = PlatformDependent.getInt(bytes, fromIndex);
+            final int word = PlatformDependent.getInt(bytes, fromIndex + offset);
             final int mask = SWARByteUtil.applyPatternInt(word, pattern);
             if (mask != 0) {
-                return fromIndex + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
+                return fromIndex + offset + SWARByteUtil.getIndexInt(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
             }
             return -1;
         case 3:
-            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
-                return fromIndex;
+            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
+                return fromIndex + offset;
             }
-            ++fromIndex;
+            ++offset;
         case 2:
-            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
-                return fromIndex;
+            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
+                return fromIndex + offset;
             }
-            ++fromIndex;
+            ++offset;
         case 1:
-            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
-                return fromIndex;
+            if (PlatformDependent.getByte(bytes, fromIndex + offset) == value) {
+                return fromIndex + offset;
             }
-            break;
         }
         return -1;
     }
