@@ -48,6 +48,8 @@ public final class AsciiStringUtil {
         int offset = 0;
         int word, mask;
         switch (length) {
+        case 0:
+            return - 1;
         case 7:
             word = PlatformDependent.getInt(bytes, fromIndex);
             mask = SWARByteUtil.applyPatternInt(word, pattern);
