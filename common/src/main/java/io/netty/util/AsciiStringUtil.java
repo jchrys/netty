@@ -209,25 +209,23 @@ public final class AsciiStringUtil {
         if (remaining == 0) {
             return -1;
         }
-        int byteCount = remaining & 3;
-        if (byteCount >= 1) {
+        if ((remaining & 1) != 0) {
             if (bytes[fromIndex] == value) {
                 return fromIndex;
             }
+            fromIndex += 1;
         }
-        if (byteCount >= 2) {
+
+        if ((remaining & 2) != 0) {
+            if (bytes[fromIndex] == value) {
+                return fromIndex;
+            }
             if (bytes[fromIndex + 1] == value) {
                 return fromIndex + 1;
             }
+            fromIndex += 1;
         }
-
-        if (byteCount == 3) {
-            if (bytes[fromIndex + 2] == value) {
-                return fromIndex + 2;
-            }
-        }
-
-        if (remaining >= 4) {
+        if ((remaining & 4) != 0) {
             final int word = PlatformDependent.getInt(bytes, fromIndex);
             final int mask = SWARByteUtil.applyPatternInt(word, pattern);
             if (mask != 0) {
