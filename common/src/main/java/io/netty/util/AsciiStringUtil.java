@@ -32,15 +32,7 @@ public final class AsciiStringUtil {
         }
         final int length = toIndex - fromIndex;
         final int longCount = length >>> 3;
-        final int byteCount = length & 7;
         final long pattern = SWARByteUtil.compilePattern(value);
-        if (byteCount > 0) {
-            final int index = unrolledFirstIndexOf(bytes, fromIndex, byteCount, value);
-            if (index >= 0) {
-                return index;
-            }
-            fromIndex += byteCount;
-        }
         for (int i = 0; i < longCount; ++i) {
             final long word = PlatformDependent.getLong(bytes, fromIndex);
             final long mask = SWARByteUtil.applyPattern(word, pattern);
@@ -49,51 +41,39 @@ public final class AsciiStringUtil {
             }
             fromIndex += Long.BYTES;
         }
-        return -1;
-    }
-
-    private static int unrolledFirstIndexOf(byte[] bytes, int fromIndex, int length, int value) {
-        //assert length > 0 && length < 8;
+        if (fromIndex == toIndex) {
+            return -1;
+        }
+        int byteCount = length & 7;
+        if (byteCount >= 4) {
+            final int word = PlatformDependent.getInt(bytes, fromIndex);
+            final int mask = (int) SWARByteUtil.applyPattern(word, pattern);
+            if (mask != 0) {
+                return fromIndex + SWARByteUtil.getIndex(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
+            }
+            fromIndex += 4;
+            byteCount -= 4;
+        }
+        if (byteCount == 0) {
+            return -1;
+        }
         if (PlatformDependent.getByte(bytes, fromIndex) == value) {
             return fromIndex;
         }
-        if (length == 1) {
+        if (byteCount == 1) {
             return -1;
         }
         if (PlatformDependent.getByte(bytes, fromIndex + 1) == value) {
             return fromIndex + 1;
         }
-        if (length == 2) {
+        if (byteCount == 2) {
             return -1;
         }
         if (PlatformDependent.getByte(bytes, fromIndex + 2) == value) {
             return fromIndex + 2;
         }
-        if (length == 3) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 3) == value) {
-            return fromIndex + 3;
-        }
-        if (length == 4) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 4) == value) {
-            return fromIndex + 4;
-        }
-        if (length == 5) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 5) == value) {
-            return fromIndex + 5;
-        }
-        if (length == 6) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 6) == value) {
-            return fromIndex + 6;
-        }
         return -1;
+
     }
 
     static int firstIndexOf0(byte[] bytes, int fromIndex, int toIndex, byte value) {
