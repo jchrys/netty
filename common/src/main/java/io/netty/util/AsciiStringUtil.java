@@ -89,7 +89,7 @@ public final class AsciiStringUtil {
             }
             fromIndex += Long.BYTES;
         }
-        return unrolledFirstIndexOf0(bytes, fromIndex, toIndex - fromIndex & 7, value, (int) pattern);
+        return unrolledFirstIndexOf0(bytes, fromIndex, toIndex, value, (int) pattern);
     }
 
     static int firstIndexOf0(byte[] bytes, int fromIndex, int toIndex, byte value) {
