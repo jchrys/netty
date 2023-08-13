@@ -44,16 +44,16 @@ public final class AsciiStringUtil {
         if (fromIndex == toIndex) {
             return -1;
         }
-        int byteCount = length & 7;
-        if (byteCount >= 4) {
+        final int intCount = length & 4;
+        if (intCount > 0) {
             final int word = PlatformDependent.getInt(bytes, fromIndex);
             final int mask = (int) SWARByteUtil.applyPattern(word, pattern);
             if (mask != 0) {
                 return fromIndex + SWARByteUtil.getIndex(mask, PlatformDependent.BIG_ENDIAN_NATIVE_ORDER);
             }
             fromIndex += 4;
-            byteCount -= 4;
         }
+        final int byteCount = length & 3;
         if (byteCount == 0) {
             return -1;
         }
