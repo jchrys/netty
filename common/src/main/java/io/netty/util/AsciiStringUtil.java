@@ -80,32 +80,31 @@ public final class AsciiStringUtil {
         }
         final int length = toIndex - fromIndex;
         final long pattern = SWARByteUtil.compilePattern(value);
-        final int byteCount = length & 7;
-        if (byteCount > 0) {
-            if ((byteCount & 4) != 0) {
-                final int word = PlatformDependent.getInt(bytes, fromIndex);
-                final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
-                if (mask != 0) {
-                    return fromIndex + Integer.numberOfLeadingZeros(mask);
-                }
-                fromIndex += Integer.BYTES;
+        if ((length & 4) != 0) {
+            final int word = PlatformDependent.getInt(bytes, fromIndex);
+            final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
+            if (mask != 0) {
+                return fromIndex + Integer.numberOfLeadingZeros(mask);
             }
-            if ((byteCount & 2) != 0) {
-                if (bytes[fromIndex] == value) {
-                    return fromIndex;
-                }
-                if (bytes[fromIndex + 1] == value) {
-                    return fromIndex + 1;
-                }
-                fromIndex += 2;
-            }
-            if ((byteCount & 1) != 0) {
-                if (bytes[fromIndex] == value) {
-                    return fromIndex;
-                }
-                fromIndex += 1;
-            }
+            fromIndex += Integer.BYTES;
         }
+        if ((length & 2) != 0) {
+
+            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
+                return fromIndex;
+            }
+            if (PlatformDependent.getByte(bytes, fromIndex + 1) == value) {
+                return fromIndex + 1;
+            }
+            fromIndex += 2;
+        }
+        if ((length & 1) != 0) {
+            if (PlatformDependent.getByte(bytes, fromIndex) == value) {
+                return fromIndex;
+            }
+            fromIndex += 1;
+        }
+
         if (length >= 8) {
             final int longCount = length >>> 3;
             for (int i = 0; i < longCount; ++i) {
