@@ -89,7 +89,7 @@ public final class AsciiStringUtil {
             }
             fromIndex += Long.BYTES;
         }
-        return unrolledFirstIndexOf0(bytes, fromIndex, toIndex-fromIndex, value, (int) pattern);
+        return unrolledFirstIndexOf0(bytes, fromIndex, toIndex - fromIndex, value, (int) pattern);
     }
 
     static int firstIndexOf0(byte[] bytes, int fromIndex, int toIndex, byte value) {
@@ -209,19 +209,29 @@ public final class AsciiStringUtil {
         if (remaining == 0) {
             return -1;
         }
-        int intCount = remaining & 4;
         int byteCount = remaining & 3;
-        if (byteCount > 0) {
-            int index = unrolledFirstIndexOf(bytes, fromIndex, byteCount, value);
-            if (index >= 0) {
-                return index;
+        if (byteCount >= 1) {
+            if (bytes[fromIndex] == value) {
+                return fromIndex;
             }
         }
-        if (intCount > 0) {
-            int word = PlatformDependent.getInt(bytes, fromIndex + byteCount);
-            int mask = SWARByteUtil.applyPatternInt(word, pattern);
+        if (byteCount >= 2) {
+            if (bytes[fromIndex + 1] == value) {
+                return fromIndex + 1;
+            }
+        }
+
+        if (byteCount == 3) {
+            if (bytes[fromIndex + 2] == value) {
+                return fromIndex + 2;
+            }
+        }
+
+        if (remaining >= 4) {
+            final int word = PlatformDependent.getInt(bytes, fromIndex);
+            final int mask = SWARByteUtil.applyPatternInt(word, pattern);
             if (mask != 0) {
-                return fromIndex + byteCount + Integer.numberOfLeadingZeros(mask);
+                return fromIndex + Integer.numberOfTrailingZeros(mask);
             }
         }
         return -1;
