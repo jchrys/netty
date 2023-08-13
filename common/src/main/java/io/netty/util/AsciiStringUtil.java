@@ -80,6 +80,18 @@ public final class AsciiStringUtil {
         }
         final int length = toIndex - fromIndex;
         final long pattern = SWARByteUtil.compilePattern(value);
+
+        int remaining = length & 7;
+        if (remaining >= 4) {
+            final int word = PlatformDependent.getInt(bytes, fromIndex);
+            final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
+            if (mask != 0) {
+                return fromIndex + SWARByteUtil.getIndexInt(mask);
+            }
+            fromIndex += Integer.BYTES;
+            remaining -= 4;
+        }
+
         if (length >= 8) {
             final int longCount = length >>> 3;
             for (int i = 0; i < longCount; ++i) {
@@ -92,16 +104,6 @@ public final class AsciiStringUtil {
             }
         }
 
-        if ((length & 4) != 0) {
-            final int word = PlatformDependent.getInt(bytes, fromIndex);
-            final int mask = SWARByteUtil.applyPatternInt(word, (int) pattern);
-            if (mask != 0) {
-                return fromIndex + SWARByteUtil.getIndexInt(mask);
-            }
-            fromIndex += Integer.BYTES;
-        }
-
-        final int remaining = length & 3;
         if (remaining == 0) {
             return -1;
         }
