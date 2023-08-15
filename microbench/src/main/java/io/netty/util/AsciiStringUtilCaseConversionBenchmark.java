@@ -41,7 +41,7 @@ public class AsciiStringUtilCaseConversionBenchmark extends AbstractMicrobenchma
 
     @Param({ "7", "16", "23", "32" })
     int size;
-    @Param({ "11" })
+    @Param({ "4", "11" })
     int logPermutations;
 
     @Param({ "1" })
