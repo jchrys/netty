@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.netty.microbenchmark.common;
+package io.netty.util;
 
 import io.netty.microbench.util.AbstractMicrobenchmark;
 import io.netty.util.AsciiString;
