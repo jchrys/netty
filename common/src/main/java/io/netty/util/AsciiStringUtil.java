@@ -232,6 +232,12 @@ public final class AsciiStringUtil {
         return unrolledContainsLowerCase(bytes, fromIndex, length & 7);
     }
 
+    public static boolean containsLowerCase(long word) {
+        final long mask = SWARByteUtil.applyPatternRange(word, SWARByteUtil.LOWER_CASE_PATTERN,
+                                                         SWARByteUtil.LOWER_CASE_RANGE_PATTERN);
+        return mask != 0;
+    }
+
     private static boolean unrolledContainsLowerCase(byte[] bytes, int fromIndex, int length) {
         if ((length & 4) != 0) {
             final int word = PlatformDependent.getInt(bytes, fromIndex);
@@ -424,6 +430,17 @@ public final class AsciiStringUtil {
                    toLowerCase(PlatformDependent.getByte(rhs, rhsPos));
         }
         return true;
+    }
+
+    public static boolean containsLowerCasePolly(long word) {
+        long rotated = word & 0x7f7f7f7f7f7f7f7fL;
+        rotated += 0x2525252525252525L;
+        rotated &= 0x7f7f7f7f7f7f7f7fL;
+        rotated += 0x1a1a1a1a1a1a1a1aL;
+        rotated &= ~word;
+        rotated >>= 2;
+        rotated &= 0x2020202020202020L;
+        return rotated != 0;
     }
 
     public static final class SWARByteUtil {
