@@ -15,7 +15,6 @@
 package io.netty.util;
 
 import io.netty.microbench.util.AbstractMicrobenchmark;
-import io.netty.util.AsciiString;
 import io.netty.util.internal.PlatformDependent;
 import io.netty.util.internal.SuppressJava6Requirement;
 import org.openjdk.jmh.annotations.Benchmark;
