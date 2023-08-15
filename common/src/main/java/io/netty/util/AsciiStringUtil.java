@@ -366,7 +366,7 @@ public final class AsciiStringUtil {
 
     private static boolean linearEqualsIgnoreCase(byte[] lhs, int lhsPos, byte[] rhs, int rhsPos, int length) {
         for (int i = 0; i < length; ++i) {
-            if (toLowerCase(lhs[lhsPos++]) != toLowerCase(rhs[rhsPos++])) {
+            if (toLowerCase(lhs[lhsPos + i]) != toLowerCase(rhs[rhsPos + i])) {
                 return false;
             }
         }
