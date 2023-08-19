@@ -64,7 +64,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
     @Param({ "0" })
     private byte needleByte;
 
-    @Param({ "true" })
+    @Param({ "false" })
     private boolean noUnsafe;
 
     @Setup(Level.Trial)
@@ -103,10 +103,5 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
     @Benchmark
     public int indexOf() {
         return getData().indexOf((char) needleByte, 0);
-    }
-
-    @Benchmark
-    public int stringIndexOf() {
-        return getData().toString().indexOf((char) needleByte);
     }
 }
