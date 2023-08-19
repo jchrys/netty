@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
 
     public static Object blackhole;
-    @Param({ "7", "16", "23", "32" })
+    @Param({ "7", "8", "15", "16", "17", "23", "24", "25", "31", "32", "33" })
     int size;
     @Param({ "4", "11" })
     int logPermutations;
@@ -90,11 +90,6 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
 
     private AsciiString getData() {
         return data[i++ & permutations - 1];
-    }
-
-    @Benchmark
-    public int indexOf() {
-        return getData().indexOf((char) needleByte, 0);
     }
 
     @Benchmark
