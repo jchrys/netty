@@ -101,8 +101,9 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
     @CompilerControl(Mode.DONT_INLINE)
     public void stringIndexOf(Blackhole blackhole) {
         final AsciiString data = getData();
+        final String string = data.toString();
         for (int i = 0; i < 1000; ++i) {
-            data.toString().indexOf((char) needleByte);
+            string.indexOf((char) needleByte);
         }
     }
 }
