@@ -18,6 +18,8 @@ import io.netty.microbench.util.AbstractMicrobenchmark;
 import io.netty.util.internal.PlatformDependent;
 import io.netty.util.internal.SuppressJava6Requirement;
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.CompilerControl;
+import org.openjdk.jmh.annotations.CompilerControl.Mode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
@@ -28,6 +30,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.SplittableRandom;
 import java.util.concurrent.TimeUnit;
@@ -95,7 +98,11 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
     }
 
     @Benchmark
-    public int stringIndexOf() {
-        return getData().toString().indexOf((char) needleByte);
+    @CompilerControl(Mode.DONT_INLINE)
+    public void stringIndexOf(Blackhole blackhole) {
+        for (int i = 0; i < 100; ++i) {
+            blackhole.consume(getData().toString().indexOf((char) needleByte));
+            ;
+        }
     }
 }
