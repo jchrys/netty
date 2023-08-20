@@ -45,7 +45,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
 
     public static Object blackhole;
     @Param({
-            "15"
+            "63"
     })
     int size;
     @Param({ "11" })
