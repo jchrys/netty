@@ -32,7 +32,7 @@ public final class AsciiStringUtil {
         final int length = toIndex - fromIndex;
         final int longCount = length >>> 3;
         final long pattern = SWARByteUtil.compilePattern(value);
-        for (long i = 0; i < longCount; ++i) {
+        for (int i = 0; i < longCount; ++i) {
             final long word = PlatformDependent.getLong(bytes, fromIndex);
             final long mask = SWARByteUtil.applyPattern(word, pattern);
             if (mask != 0) {
@@ -55,47 +55,10 @@ public final class AsciiStringUtil {
 
     private static int unrolledFirstIndexOf(byte[] bytes, int fromIndex, int byteCount, byte value) {
         assert byteCount >= 0 && byteCount < 8;
-        if (byteCount == 0) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex) == value) {
-            return fromIndex;
-        }
-        if (byteCount == 1) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 1) == value) {
-            return fromIndex + 1;
-        }
-        if (byteCount == 2) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 2) == value) {
-            return fromIndex + 2;
-        }
-        if (byteCount == 3) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 3) == value) {
-            return fromIndex + 3;
-        }
-        if (byteCount == 4) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 4) == value) {
-            return fromIndex + 4;
-        }
-        if (byteCount == 5) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 5) == value) {
-            return fromIndex + 5;
-        }
-        if (byteCount == 6) {
-            return -1;
-        }
-        if (PlatformDependent.getByte(bytes, fromIndex + 6) == value) {
-            return fromIndex + 6;
+        for (int i = 0; i < byteCount; ++i) {
+            if (PlatformDependent.getByte(bytes, fromIndex + i) == value) {
+                return fromIndex + i;
+            }
         }
         return -1;
     }
