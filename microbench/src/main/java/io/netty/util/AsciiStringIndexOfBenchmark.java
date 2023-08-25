@@ -58,7 +58,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
     @Param({ "0" })
     private byte needleByte;
 
-    @Param({ "false" })
+    @Param({ "true", "false" })
     private boolean noUnsafe;
 
     @Setup(Level.Trial)
