@@ -83,7 +83,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
                 }
                 byteArray[j] = (byte) value;
             }
-            final int foundIndex = random.nextInt(Math.max(0, size - 8), size);
+            final int foundIndex = random.nextInt(Math.max(0, size - 32), size);
             byteArray[foundIndex] = needleByte;
             data[i] = new AsciiString(byteArray);
             blackhole = data[i].toString(); // cache
