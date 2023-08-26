@@ -32,7 +32,7 @@ import org.openjdk.jmh.annotations.Warmup;
 import java.util.SplittableRandom;
 import java.util.concurrent.TimeUnit;
 
-@Threads(2)
+@Threads(4)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Fork(2)
 @Warmup(iterations = 5, time = 1)
