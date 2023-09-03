@@ -42,16 +42,10 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
 
     public static Object blackhole;
     @Param({
-            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-            "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
-            "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
-            "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
-            "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
-            "51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
-            "61", "62", "63", "64", "123", "124", "125", "126", "127", "128"
+            "8", "15", "24", "29", "32", "47", "64"
     })
     int size;
-    @Param({ "4", "7", "11", "15", "19" })
+    @Param({ "11" })
     int logPermutations;
 
     @Param({ "0" })
@@ -67,7 +61,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
     @Param({ "false" })
     private boolean noUnsafe;
 
-    @Param({ "32", "16", "8" })
+    @Param({ "1024" })
     private int needlePosition;
 
     @Setup(Level.Trial)
@@ -92,7 +86,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
                 }
                 byteArray[j] = (byte) value;
             }
-            final int foundIndex = random.nextInt(Math.max(0, size - needlePosition), size);
+            final int foundIndex = random.nextInt(Math.max(0, size - random.nextInt(0, 5) << 3), size);
             byteArray[foundIndex] = needleByte;
             data[i] = new AsciiString(byteArray);
             blackhole = data[i].toString(); // cache
