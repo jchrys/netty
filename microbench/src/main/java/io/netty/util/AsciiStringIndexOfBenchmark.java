@@ -51,7 +51,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
             "61", "62", "63", "64",
     })
     int size;
-    @Param({ "2", "5", "7", "11", "13", "17" })
+    @Param({ "2", "5", "9", "13", "17" })
     int logPermutations;
 
     @Param({ "0" })
@@ -67,7 +67,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
     @Param({ "false" })
     private boolean noUnsafe;
 
-    @Param({ "32", "24", "16", "8" })
+    @Param({ "32", "16", "8" })
     private int needlePosition;
 
     @Setup(Level.Trial)
