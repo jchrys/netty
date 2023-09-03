@@ -51,7 +51,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
             "61", "62", "63", "64", "123", "124", "125", "126", "127", "128"
     })
     int size;
-    @Param({ "2", "5", "9", "13", "17" })
+    @Param({ "4", "7", "11", "15", "19" })
     int logPermutations;
 
     @Param({ "0" })
