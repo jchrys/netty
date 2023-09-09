@@ -58,7 +58,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
             "121", "122", "123", "124", "125", "126", "127", "128"
     })
     int size;
-    @Param({ "4", "11", "14", "17" })
+    @Param({ "4", "7", "11", "14", "17" })
     int logPermutations;
 
     @Param({ "1" })
@@ -73,6 +73,9 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
 
     @Param({ "false" })
     private boolean noUnsafe;
+
+    @Param({ "8", "32", "999" })
+    private int bytePosition;
 
     @Setup(Level.Trial)
     @SuppressJava6Requirement(reason = "using SplittableRandom to reliably produce data")
@@ -96,7 +99,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
                 }
                 byteArray[j] = (byte) value;
             }
-            final int foundIndex = random.nextInt(Math.max(0, size - 32), size);
+            final int foundIndex = random.nextInt(Math.max(0, size - bytePosition), size);
             byteArray[foundIndex] = needleByte;
             data[i] = new AsciiString(byteArray);
             blackhole = data[i].toString(); // cache
