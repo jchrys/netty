@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 public class AsciiStringCaseConversionBenchmark extends AbstractMicrobenchmark {
 
-    @Param({ "7", "16", "23", "32" })
+    @Param({ "1", "2", "3", "4", "5", "6", "7", "8", "16", "23", "31", "32" })
     int size;
 
     @Param({ "11" })
