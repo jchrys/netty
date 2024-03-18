@@ -31,7 +31,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 @Threads(1)
 @Measurement(iterations = 5, time = 200, timeUnit = MILLISECONDS)
 @Warmup(iterations = 5, time = 200, timeUnit = MILLISECONDS)
-
 public class AsciiStringBenchmark extends AbstractMicrobenchmark {
 
 
