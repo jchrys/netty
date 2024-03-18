@@ -78,6 +78,8 @@ public class AsciiStringCaseConversionBenchmark extends AbstractMicrobenchmark {
             data[i] = new AsciiString(byteArray);
 
             System.arraycopy(byteArray, 0, byteArrayCopy, 0, size);
+            final int difIdx = random.nextInt(0, size);
+            byteArrayCopy[difIdx] = (byte) (byteArrayCopy[difIdx] ^ 0x1);
             copiedData[i] = new AsciiString(byteArrayCopy);
         }
     }
