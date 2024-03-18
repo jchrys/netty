@@ -1499,6 +1499,100 @@ public final class AsciiString implements CharSequence, Comparable<CharSequence>
         return res;
     }
 
+    public AsciiString toLowerCaseOld() {
+        boolean lowercased = true;
+        int i, j;
+        final int len = length() + arrayOffset();
+        for (i = arrayOffset(); i < len; ++i) {
+            byte b = value[i];
+            if (b >= 'A' && b <= 'Z') {
+                lowercased = false;
+                break;
+            }
+        }
+
+        // Check if this string does not contain any uppercase characters.
+        if (lowercased) {
+            return this;
+        }
+
+        final byte[] newValue = PlatformDependent.allocateUninitializedArray(length());
+        for (i = 0, j = arrayOffset(); i < newValue.length; ++i, ++j) {
+            newValue[i] = AsciiStringUtil.toLowerCase(value[j]);
+        }
+
+        return new AsciiString(newValue, false);
+    }
+
+    public AsciiString toUpperCaseOld() {
+        boolean uppercased = true;
+        int i, j;
+        final int len = length() + arrayOffset();
+        for (i = arrayOffset(); i < len; ++i) {
+            byte b = value[i];
+            if (b >= 'a' && b <= 'z') {
+                uppercased = false;
+                break;
+            }
+        }
+
+        // Check if this string does not contain any lowercase characters.
+        if (uppercased) {
+            return this;
+        }
+
+        final byte[] newValue = PlatformDependent.allocateUninitializedArray(length());
+        for (i = 0, j = arrayOffset(); i < newValue.length; ++i, ++j) {
+            newValue[i] = AsciiStringUtil.toUpperCase(value[j]);
+        }
+
+        return new AsciiString(newValue, false);
+    }
+
+    public boolean contentEqualsIgnoreCaseOld(CharSequence string) {
+        if (this == string) {
+            return true;
+        }
+
+        if (string == null || string.length() != length()) {
+            return false;
+        }
+
+        if (string instanceof AsciiString) {
+            AsciiString other = (AsciiString) string;
+            byte[] value = this.value;
+            if (offset == 0 && other.offset == 0 && length == value.length) {
+                byte[] otherValue = other.value;
+                for (int i = 0; i < value.length; ++i) {
+                    if (!equalsIgnoreCase(value[i], otherValue[i])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return misalignedEqualsIgnoreCase(other);
+        }
+
+        byte[] value = this.value;
+        for (int i = offset, j = 0; j < string.length(); ++i, ++j) {
+            if (!equalsIgnoreCase(b2c(value[i]), string.charAt(j))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean misalignedEqualsIgnoreCase(AsciiString other) {
+        byte[] value = this.value;
+        byte[] otherValue = other.value;
+        for (int i = offset, j = other.offset, end = offset + length; i < end; ++i, ++j) {
+            if (!equalsIgnoreCase(value[i], otherValue[j])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private interface CharEqualityComparator {
         boolean equals(char a, char b);
     }
@@ -1787,6 +1881,9 @@ public final class AsciiString implements CharSequence, Comparable<CharSequence>
         return a == b || toLowerCase(a) == toLowerCase(b);
     }
 
+    private static boolean equalsIgnoreCase(byte a, byte b) {
+        return a == b || AsciiStringUtil.toLowerCase(a) == AsciiStringUtil.toLowerCase(b);
+    }
     /**
      * If the character is uppercase - converts the character to lowercase,
      * otherwise returns the character as it is. Only for ASCII characters.
@@ -1817,3 +1914,4 @@ public final class AsciiString implements CharSequence, Comparable<CharSequence>
         return (char) (b & 0xFF);
     }
 }
+

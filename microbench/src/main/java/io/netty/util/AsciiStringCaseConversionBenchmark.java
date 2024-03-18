@@ -37,7 +37,13 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 8, time = 1)
 @State(Scope.Benchmark)
-public class AsciiStringUtilCaseConversionBenchmark extends AbstractMicrobenchmark {
+public class AsciiStringCaseConversionBenchmark extends AbstractMicrobenchmark {
+
+    private static final byte[] ALPHA_NUMERIC_TABLE = {
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
+            'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+            'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+    };
 
     @Param({ "7", "16", "23", "32" })
     int size;
@@ -50,9 +56,10 @@ public class AsciiStringUtilCaseConversionBenchmark extends AbstractMicrobenchma
 
     int permutations;
 
-    byte[][] upperCaseData;
+    AsciiString[] data;
 
-    byte[] ret;
+    AsciiString[] copiedData;
+
 
     private int i;
 
@@ -65,41 +72,62 @@ public class AsciiStringUtilCaseConversionBenchmark extends AbstractMicrobenchma
         System.setProperty("io.netty.noUnsafe", Boolean.valueOf(noUnsafe).toString());
         SplittableRandom random = new SplittableRandom(seed);
         permutations = 1 << logPermutations;
-        ret = new byte[size];
-        upperCaseData = new byte[permutations][size];
+        data = new AsciiString[permutations];
+        copiedData = new AsciiString[permutations];
         for (int i = 0; i < permutations; ++i) {
-            final int foundIndex = random.nextInt(Math.max(0, size - 8), size);
-            byte[] byteArray = new byte[size];
-            int j = 0;
-            for (; j < size; j++) {
-                int value = random.nextInt(0, Byte.MAX_VALUE + 1);
-                // turn any found value into something different
-                if (j < foundIndex) {
-                    if (value >= 'A' && value <= 'Z') {
-                        value |= 32;
-                    }
-                }
-                if (j == foundIndex) {
-                    value = 'N';
-                }
-                byteArray[j] = (byte) value;
+            final byte[] byteArray = new byte[size];
+            final byte[] byteArrayCopy = new byte[size];
+            for (int j = 0; j < size; j++) {
+                final int randIdx = random.nextInt(0, ALPHA_NUMERIC_TABLE.length);
+                byteArray[j] = ALPHA_NUMERIC_TABLE[randIdx];
             }
-            upperCaseData[i] = byteArray;
+            data[i] = new AsciiString(byteArray);
+
+            System.arraycopy(byteArray, 0, byteArrayCopy, 0, size);
+            copiedData[i] = new AsciiString(byteArrayCopy);
         }
     }
 
-    private byte[] getData() {
-        return upperCaseData[i++ & permutations - 1];
+    private AsciiString getData() {
+        return data[i++ & permutations - 1];
+    }
+
+    private AsciiString getCopiedData() {
+        return copiedData[i & permutations - 1];
     }
 
     @Benchmark
-    public byte[] toLowerCase() {
-        AsciiStringUtil.toLowerCase(getData(), 0, ret, 0, size);
-        return ret;
+    public AsciiString toLowerCase() {
+        return getData().toLowerCase();
     }
 
     @Benchmark
-    public boolean containsUpperCase() {
-        return AsciiStringUtil.containsUpperCase(getData(), 0, size);
+    public AsciiString toLowerCaseOld() {
+        return getData().toLowerCaseOld();
     }
+
+    @Benchmark
+    public AsciiString toUpperCase() {
+        return getData().toUpperCase();
+    }
+
+    @Benchmark
+    public AsciiString toUpperCaseOld() {
+        return getData().toUpperCaseOld();
+    }
+
+    @Benchmark
+    public boolean isEqualsIgnoreCase() {
+        final AsciiString s1 = getCopiedData();
+        final AsciiString s2 = getData();
+        return s1.contentEqualsIgnoreCase(s2);
+    }
+
+    @Benchmark
+    public boolean isEqualsIgnoreCaseOld() {
+        final AsciiString s1 = getCopiedData();
+        final AsciiString s2 = getData();
+        return s1.contentEqualsIgnoreCaseOld(s2);
+    }
+
 }
