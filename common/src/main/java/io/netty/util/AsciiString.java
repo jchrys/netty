@@ -1130,6 +1130,13 @@ public final class AsciiString implements CharSequence, Comparable<CharSequence>
         return cache;
     }
 
+    public String toString(boolean cache) {
+        if (cache) {
+            return toString();
+        }
+        return toString(0);
+    }
+
     /**
      * Translates the entire byte string to a {@link String} using the {@code charset} encoding.
      * @see #toString(int, int)

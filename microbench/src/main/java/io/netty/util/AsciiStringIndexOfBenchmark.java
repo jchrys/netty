@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
 
     public static Object blackhole;
-    @Param({ "7", "16", "23", "32" })
+    @Param({ "7", "16", "17", "23", "27", "31", "32", "33", "35", "39", "43", "47", "51", "55", "59", "63", "64" })
     int size;
 
     @Param({ "4", "11" })
@@ -61,6 +61,9 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
 
     @Param({ "true", "false" })
     private boolean noUnsafe;
+
+    @Param({ "true", "false" })
+    private boolean cache;
 
     @Setup(Level.Trial)
     @SuppressJava6Requirement(reason = "using SplittableRandom to reliably produce data")
@@ -87,7 +90,7 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
             final int foundIndex = random.nextInt(Math.max(0, size - 8), size);
             byteArray[foundIndex] = needleByte;
             data[i] = new AsciiString(byteArray);
-            blackhole = data[i].toString(); // cache
+            blackhole = data[i].toString(); // populate cache
         }
     }
 
@@ -102,6 +105,6 @@ public class AsciiStringIndexOfBenchmark extends AbstractMicrobenchmark {
 
     @Benchmark
     public int stringIndexOf() {
-        return getData().toString().indexOf((char) needleByte);
+        return getData().toString(cache).indexOf((char) needleByte);
     }
 }
