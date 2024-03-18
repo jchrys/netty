@@ -398,22 +398,23 @@ final class AsciiStringUtil {
             return SWARUtil.toLowerCase(PlatformDependent.getInt(lhs, lhsPos)) ==
                    SWARUtil.toLowerCase(PlatformDependent.getInt(rhs, rhsPos));
         }
-        if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos))
-            != toLowerCase(PlatformDependent.getByte(rhs, rhsPos))) {
+
+        if (byteCount == 3) {
+            int l = PlatformDependent.getShort(lhs, lhsPos) << 8;
+            int r = PlatformDependent.getShort(rhs, rhsPos) << 8;
+            l |= PlatformDependent.getByte(lhs, lhsPos + 2);
+            r |= PlatformDependent.getByte(rhs, rhsPos + 2);
+            return SWARUtil.toLowerCase(l) == SWARUtil.toLowerCase(r);
+        }
+
+        if (PlatformDependent.getByte(lhs, lhsPos) != PlatformDependent.getByte(rhs, rhsPos)) {
             return false;
         }
         if (byteCount == 1) {
             return true;
         }
-        if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 1))
-            != toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 1))) {
-            return false;
-        }
-        if (byteCount == 2) {
-            return true;
-        }
-        return toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 2))
-               == toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 2));
+        return toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 1))
+               == toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 1));
     }
 
     private AsciiStringUtil() {
