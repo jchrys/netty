@@ -379,66 +379,25 @@ final class AsciiStringUtil {
     private static boolean unrolledEqualsIgnoreCase(final byte[] lhs, final int lhsPos,
                                                     final byte[] rhs, final int rhsPos, final int byteCount) {
         assert byteCount >= 0 && byteCount < 8;
-        if (byteCount == 0) {
-            return true;
+        long lWord = 0;
+        long rWord = 0;
+        int offset = 0;
+        if ((byteCount & 4) != 0) {
+            lWord |= (long) PlatformDependent.getInt(lhs, lhsPos) << 24;
+            rWord |= (long) PlatformDependent.getInt(rhs, rhsPos) << 24;
+            offset += Integer.BYTES;
+        }
+        if ((byteCount & 2) != 0) {
+            lWord |= (long) (PlatformDependent.getShort(lhs, lhsPos + offset) & 0xFFFF) << 8;
+            rWord |= (long) (PlatformDependent.getShort(rhs, rhsPos + offset) & 0xFFFF) << 8;
+            offset += Short.BYTES;
         }
 
-        if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos))
-            != toLowerCase(PlatformDependent.getByte(rhs, rhsPos))) {
-            return false;
+        if ((byteCount & 1) != 0) {
+            lWord |= PlatformDependent.getByte(lhs, lhsPos + offset);
+            rWord |= PlatformDependent.getByte(rhs, rhsPos + offset);
         }
-
-        if (byteCount == 1) {
-            return true;
-        }
-
-        if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 1))
-            != toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 1))) {
-            return false;
-        }
-
-        if (byteCount == 2) {
-            return true;
-        }
-
-        if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 2))
-            != toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 2))) {
-            return false;
-        }
-
-        if (byteCount == 3) {
-            return true;
-        }
-
-        if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 3))
-            != toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 3))) {
-            return false;
-        }
-
-        if (byteCount == 4) {
-            return true;
-        }
-
-        if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 4))
-            != toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 4))) {
-            return false;
-        }
-
-        if (byteCount == 5) {
-            return true;
-        }
-
-        if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 5))
-            != toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 5))) {
-            return false;
-        }
-
-        if (byteCount == 6) {
-            return true;
-        }
-
-        return toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 6))
-               == toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 6));
+        return SWARUtil.toLowerCase(lWord) == SWARUtil.toLowerCase(rWord);
     }
 
     private AsciiStringUtil() {
