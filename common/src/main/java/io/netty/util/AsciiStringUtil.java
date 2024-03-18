@@ -412,8 +412,8 @@ final class AsciiStringUtil {
         if (byteCount == 2) {
             return true;
         }
-        return toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 2)) ==
-               toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 2));
+        return toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 2))
+               == toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 2));
     }
 
     private AsciiStringUtil() {
