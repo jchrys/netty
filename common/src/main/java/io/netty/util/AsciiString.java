@@ -1122,7 +1122,12 @@ public final class AsciiString implements CharSequence, Comparable<CharSequence>
      */
     @Override
     public String toString() {
-        return toString(0);
+        String cache = string;
+        if (cache == null) {
+            cache = toString(0);
+            string = cache;
+        }
+        return cache;
     }
 
     /**
