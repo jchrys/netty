@@ -57,7 +57,7 @@ public class AsciiStringCaseConversionBenchmark extends AbstractMicrobenchmark {
 
     private int i;
 
-    @Param({ "true", "false" })
+    @Param({ "false" })
     private boolean noUnsafe;
 
     @Setup(Level.Trial)
