@@ -356,14 +356,22 @@ final class AsciiStringUtil {
             return linearEqualsIgnoreCase(lhs, lhsPos, rhs, rhsPos, length);
         }
 
-        for (; lhsPos < lhs.length; lhsPos += Long.BYTES, rhsPos += Long.BYTES) {
-            final long lWord = PlatformDependent.getLong(lhs, lhsPos);
-            final long rWord = PlatformDependent.getLong(rhs, rhsPos);
+        final int byteCount = length & 7;
+        if (byteCount > 0) {
+            if (unrolledEqualsIgnoreCase(lhs, lhsPos, rhs, rhsPos, byteCount)) {
+                return false;
+            }
+        }
+
+
+        for (int offset = byteCount; offset < length; offset += Long.BYTES) {
+            final long lWord = PlatformDependent.getLong(lhs, lhsPos + offset);
+            final long rWord = PlatformDependent.getLong(rhs, rhsPos + offset);
             if (SWARUtil.toLowerCase(lWord) != SWARUtil.toLowerCase(rWord)) {
                 return false;
             }
         }
-        return unrolledEqualsIgnoreCase(lhs, lhsPos, rhs, rhsPos, length & 7);
+        return true;
     }
 
     private static boolean linearEqualsIgnoreCase(final byte[] lhs, int lhsPos,
