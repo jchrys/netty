@@ -39,12 +39,6 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 public class AsciiStringCaseConversionBenchmark extends AbstractMicrobenchmark {
 
-    private static final byte[] ALPHA_NUMERIC_TABLE = {
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
-            'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
-            'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-    };
-
     @Param({ "7", "16", "23", "32" })
     int size;
 
@@ -78,8 +72,8 @@ public class AsciiStringCaseConversionBenchmark extends AbstractMicrobenchmark {
             final byte[] byteArray = new byte[size];
             final byte[] byteArrayCopy = new byte[size];
             for (int j = 0; j < size; j++) {
-                final int randIdx = random.nextInt(0, ALPHA_NUMERIC_TABLE.length);
-                byteArray[j] = ALPHA_NUMERIC_TABLE[randIdx];
+                final byte asciiValue = (byte) random.nextInt(0, Byte.MAX_VALUE + 1);
+                byteArray[j] = asciiValue;
             }
             data[i] = new AsciiString(byteArray);
 
@@ -94,26 +88,6 @@ public class AsciiStringCaseConversionBenchmark extends AbstractMicrobenchmark {
 
     private AsciiString getCopiedData() {
         return copiedData[i & permutations - 1];
-    }
-
-    @Benchmark
-    public AsciiString toLowerCase() {
-        return getData().toLowerCase();
-    }
-
-    @Benchmark
-    public AsciiString toLowerCaseOld() {
-        return getData().toLowerCaseOld();
-    }
-
-    @Benchmark
-    public AsciiString toUpperCase() {
-        return getData().toUpperCase();
-    }
-
-    @Benchmark
-    public AsciiString toUpperCaseOld() {
-        return getData().toUpperCaseOld();
     }
 
     @Benchmark
