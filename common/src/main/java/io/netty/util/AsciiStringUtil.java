@@ -404,25 +404,32 @@ final class AsciiStringUtil {
             return toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 2)) ==
                    toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 2));
         }
+
+        if (SWARUtil.toLowerCase(PlatformDependent.getInt(lhs, lhsPos)) !=
+            SWARUtil.toLowerCase(PlatformDependent.getInt(rhs, rhsPos))) {
+            return false;
+        }
+
         if (byteCount == 4) {
-            return SWARUtil.toLowerCase(PlatformDependent.getInt(lhs, lhsPos)) !=
-                   SWARUtil.toLowerCase(PlatformDependent.getInt(rhs, rhsPos));
+            return true;
         }
 
+        if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 4)) !=
+            toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 4))) {
+            return false;
+        }
         if (byteCount == 5) {
-            if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos)) !=
-                toLowerCase(PlatformDependent.getByte(rhs, rhsPos))) {
-                return false;
-            }
-            return SWARUtil.toLowerCase(PlatformDependent.getInt(lhs, lhsPos + 1)) ==
-                   SWARUtil.toLowerCase(PlatformDependent.getInt(rhs, rhsPos + 1));
+            return true;
         }
-
-        long lWord = (long) PlatformDependent.getInt(lhs, lhsPos) << 32;
-        long rWord = (long) PlatformDependent.getInt(rhs, rhsPos) << 32;
-        lWord |= PlatformDependent.getInt(lhs, lhsPos + byteCount - 4);
-        rWord |= PlatformDependent.getInt(rhs, rhsPos + byteCount - 4);
-        return SWARUtil.toLowerCase(lWord) == SWARUtil.toLowerCase(rWord);
+        if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 5)) !=
+            toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 5))) {
+            return false;
+        }
+        if (byteCount == 6) {
+            return true;
+        }
+        return toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 6)) ==
+               toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 6));
     }
 
     private AsciiStringUtil() {
