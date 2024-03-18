@@ -358,7 +358,7 @@ final class AsciiStringUtil {
 
         final int byteCount = length & 7;
         if (byteCount > 0) {
-            if (unrolledEqualsIgnoreCase(lhs, lhsPos, rhs, rhsPos, byteCount)) {
+            if (!unrolledEqualsIgnoreCase(lhs, lhsPos, rhs, rhsPos, byteCount)) {
                 return false;
             }
         }
