@@ -1508,6 +1508,56 @@ public final class AsciiString implements CharSequence, Comparable<CharSequence>
         return res;
     }
 
+    public AsciiString toLowerCaseOld() {
+        boolean lowercased = true;
+        int i, j;
+        final int len = length() + arrayOffset();
+        for (i = arrayOffset(); i < len; ++i) {
+            byte b = value[i];
+            if (b >= 'A' && b <= 'Z') {
+                lowercased = false;
+                break;
+            }
+        }
+
+        // Check if this string does not contain any uppercase characters.
+        if (lowercased) {
+            return this;
+        }
+
+        final byte[] newValue = PlatformDependent.allocateUninitializedArray(length());
+        for (i = 0, j = arrayOffset(); i < newValue.length; ++i, ++j) {
+            newValue[i] = AsciiStringUtil.toLowerCase(value[j]);
+        }
+
+        return new AsciiString(newValue, false);
+    }
+
+    public AsciiString toUpperCaseOld() {
+        boolean uppercased = true;
+        int i, j;
+        final int len = length() + arrayOffset();
+        for (i = arrayOffset(); i < len; ++i) {
+            byte b = value[i];
+            if (b >= 'a' && b <= 'z') {
+                uppercased = false;
+                break;
+            }
+        }
+
+        // Check if this string does not contain any lowercase characters.
+        if (uppercased) {
+            return this;
+        }
+
+        final byte[] newValue = PlatformDependent.allocateUninitializedArray(length());
+        for (i = 0, j = arrayOffset(); i < newValue.length; ++i, ++j) {
+            newValue[i] = toUpperCase(value[j]);
+        }
+
+        return new AsciiString(newValue, false);
+    }
+
     private interface CharEqualityComparator {
         boolean equals(char a, char b);
     }

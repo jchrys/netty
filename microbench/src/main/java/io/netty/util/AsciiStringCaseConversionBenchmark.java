@@ -97,8 +97,18 @@ public class AsciiStringCaseConversionBenchmark {
     }
 
     @Benchmark
+    public AsciiString toLowerCaseOld() {
+        return getData().toLowerCaseOld();
+    }
+
+    @Benchmark
     public AsciiString toUpperCase() {
         return getData().toUpperCase();
+    }
+
+    @Benchmark
+    public AsciiString toUpperCaseOld() {
+        return getData().toUpperCaseOld();
     }
 
 }
