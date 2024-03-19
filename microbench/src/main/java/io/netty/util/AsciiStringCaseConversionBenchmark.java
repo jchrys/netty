@@ -33,13 +33,13 @@ import java.util.concurrent.TimeUnit;
 
 @Threads(1)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Fork(2)
+@Fork(1)
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 8, time = 1)
 @State(Scope.Benchmark)
 public class AsciiStringCaseConversionBenchmark extends AbstractMicrobenchmark {
 
-    @Param({ "1", "2", "3", "4", "5", "6", "7", "8", "16", "23", "31", "32" })
+    @Param({ "1", "2", "3", "4", "5", "6", "7", "8" })
     int size;
 
     @Param({ "11" })
