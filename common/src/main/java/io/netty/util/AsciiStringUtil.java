@@ -387,40 +387,36 @@ final class AsciiStringUtil {
     private static boolean unrolledEqualsIgnoreCase(final byte[] lhs, final int lhsPos,
                                                     final byte[] rhs, final int rhsPos, int byteCount) {
         assert byteCount > 0 && byteCount < 8;
-        int offset = 0;
-        if (byteCount >= 4) {
-            int lWord = PlatformDependent.getInt(lhs, lhsPos);
-            int rWord = PlatformDependent.getInt(rhs, rhsPos);
+        if (byteCount < 4) {
+            if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos)) !=
+                toLowerCase(PlatformDependent.getByte(rhs, rhsPos))) {
+                return false;
+            }
+            if (byteCount == 1) {
+                return true;
+            }
+            if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 1)) !=
+                toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 1))) {
+                return false;
+            }
+            if (byteCount == 2) {
+                return true;
+            }
+            return toLowerCase(PlatformDependent.getByte(lhs, lhsPos + 2)) ==
+                   toLowerCase(PlatformDependent.getByte(rhs, rhsPos + 2));
+        }
+        long lWord = (long) PlatformDependent.getInt(lhs, lhsPos) << 32;
+        long rWord = (long) PlatformDependent.getInt(rhs, rhsPos) << 32;
+
+        if (byteCount == 4) {
             if (SWARUtil.toLowerCase(lWord) != SWARUtil.toLowerCase(rWord)) {
                 return false;
             }
-            offset += 4;
         }
 
-        if (byteCount == 4) {
-            return true;
-        }
-
-        if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos + offset)) !=
-            toLowerCase(PlatformDependent.getByte(rhs, rhsPos + offset))) {
-            return false;
-        }
-
-        if (byteCount == 1 || byteCount == 5) {
-            return true;
-        }
-
-        if (toLowerCase(PlatformDependent.getByte(lhs, lhsPos + offset + 1)) !=
-            toLowerCase(PlatformDependent.getByte(rhs, rhsPos + offset + 1))) {
-            return false;
-        }
-
-        if (byteCount == 2 || byteCount == 6) {
-            return true;
-        }
-
-        return toLowerCase(PlatformDependent.getByte(lhs, lhsPos + offset + 2)) !=
-               toLowerCase(PlatformDependent.getByte(rhs, rhsPos + offset + 2));
+        lWord |= PlatformDependent.getInt(lhs, lhsPos + byteCount - 4);
+        rWord |= PlatformDependent.getInt(rhs, rhsPos + byteCount - 4);
+        return SWARUtil.toLowerCase(lWord) == SWARUtil.toLowerCase(rWord);
     }
 
     private AsciiStringUtil() {
