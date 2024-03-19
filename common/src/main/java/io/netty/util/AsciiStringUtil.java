@@ -348,11 +348,6 @@ final class AsciiStringUtil {
      * false otherwise.
      */
     static boolean equalsIgnoreCases(final byte[] lhs, int lhsPos, final byte[] rhs, int rhsPos, final int length) {
-        if (lhs == rhs && lhsPos == rhsPos && lhs.length >= lhsPos + length) {
-            return true;
-        }
-
-
         if (!PlatformDependent.isUnaligned()) {
             return linearEqualsIgnoreCase(lhs, lhsPos, rhs, rhsPos, length);
         }
