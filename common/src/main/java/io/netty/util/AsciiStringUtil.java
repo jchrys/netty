@@ -126,7 +126,7 @@ final class AsciiStringUtil {
 
         if ((byteCount & 2) != 0) {
             final short word = PlatformDependent.getShort(src, srcOffset + offset);
-            final short result = (short) (toLowerCase((byte) word) | (toLowerCase((byte) (word >>> 8)) << 8));
+            final short result = (short) ((toLowerCase((byte) (word >>> 8)) << 8) | toLowerCase((byte) word));
             PlatformDependent.putShort(dst, dstOffset + offset, result);
             offset += Short.BYTES;
         }
@@ -139,6 +139,7 @@ final class AsciiStringUtil {
 
     /**
      * Convert the {@link AsciiString} to a upper case.
+     *
      * @param string the {@link AsciiString} to convert
      * @return the {@link AsciiString} in upper case
      */
@@ -238,7 +239,7 @@ final class AsciiStringUtil {
         }
         if ((byteCount & 2) != 0) {
             final short word = PlatformDependent.getShort(src, srcOffset + offset);
-            final short result = (short) (toUpperCase((byte) word) | (toUpperCase((byte) (word >>> 8)) << 8));
+            final short result = (short) ((toUpperCase((byte) (word >>> 8)) << 8) | toUpperCase((byte) word));
             PlatformDependent.putShort(dst, dstOffset + offset, result);
             offset += Short.BYTES;
         }
@@ -255,6 +256,7 @@ final class AsciiStringUtil {
 
     /**
      * Check if the given byte is upper case.
+     *
      * @param value the byte to check
      * @return {@code true} if the byte is upper case, {@code false} otherwise.
      */
@@ -264,6 +266,7 @@ final class AsciiStringUtil {
 
     /**
      * Convert the given byte to lower case.
+     *
      * @param value the byte to convert
      * @return the lower case byte
      */
@@ -273,6 +276,7 @@ final class AsciiStringUtil {
 
     /**
      * Convert the given byte to upper case.
+     *
      * @param value the byte to convert
      * @return the upper case byte
      */
