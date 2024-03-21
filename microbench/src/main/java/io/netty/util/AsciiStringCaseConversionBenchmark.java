@@ -68,6 +68,7 @@ public class AsciiStringCaseConversionBenchmark {
         permutations = 1 << logPermutations;
         ret = new byte[size];
         asciiStringData = new AsciiString[permutations];
+        stringData = new String[permutations];
         for (int i = 0; i < permutations; ++i) {
             final int foundIndex = random.nextInt(Math.max(0, size - 8), size);
             final byte[] byteArray = new byte[size];
