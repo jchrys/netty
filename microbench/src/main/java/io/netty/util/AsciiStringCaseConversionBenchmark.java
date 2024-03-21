@@ -49,7 +49,9 @@ public class AsciiStringCaseConversionBenchmark {
 
     int permutations;
 
-    AsciiString[] upperCaseData;
+    AsciiString[] asciiStringData;
+
+    String[] stringData;
 
     byte[] ret;
 
@@ -65,7 +67,7 @@ public class AsciiStringCaseConversionBenchmark {
         final SplittableRandom random = new SplittableRandom(seed);
         permutations = 1 << logPermutations;
         ret = new byte[size];
-        upperCaseData = new AsciiString[permutations];
+        asciiStringData = new AsciiString[permutations];
         for (int i = 0; i < permutations; ++i) {
             final int foundIndex = random.nextInt(Math.max(0, size - 8), size);
             final byte[] byteArray = new byte[size];
@@ -83,12 +85,17 @@ public class AsciiStringCaseConversionBenchmark {
                 }
                 byteArray[j] = value;
             }
-            upperCaseData[i] = new AsciiString(byteArray, false);
+            asciiStringData[i] = new AsciiString(byteArray, false);
+            stringData[i] = asciiStringData[i].toString();
         }
     }
 
     private AsciiString getData() {
-        return upperCaseData[i++ & permutations - 1];
+        return asciiStringData[i++ & permutations - 1];
+    }
+
+    private String getStringData() {
+        return stringData[i++ & permutations - 1];
     }
 
     @Benchmark
@@ -99,6 +106,16 @@ public class AsciiStringCaseConversionBenchmark {
     @Benchmark
     public AsciiString toUpperCase() {
         return getData().toUpperCase();
+    }
+
+    @Benchmark
+    public String stringtoUpperCase() {
+        return getStringData().toUpperCase();
+    }
+
+    @Benchmark
+    public String stringToLowerCase() {
+        return getStringData().toLowerCase();
     }
 
 }
