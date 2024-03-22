@@ -110,6 +110,15 @@ public class AsciiStringCaseConversionBenchmark {
     }
 
     @Benchmark
+    public AsciiString toLowerCaseOld() {
+        return getData().toLowerCaseOld();
+    }
+
+    @Benchmark
+    public AsciiString toUpperCaseOld() {
+        return getData().toUpperCaseOld();
+    }
+
     public String stringToLowerCase() {
         return getStringData().toLowerCase();
     }
