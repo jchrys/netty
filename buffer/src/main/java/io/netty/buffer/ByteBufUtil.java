@@ -603,6 +603,47 @@ public final class ByteBufUtil {
         return -1;
     }
 
+    static int firstIndexOfOld(AbstractByteBuf buffer, int fromIndex, int toIndex, byte value) {
+        fromIndex = Math.max(fromIndex, 0);
+        if (fromIndex >= toIndex || buffer.capacity() == 0) {
+            return -1;
+        }
+        final int length = toIndex - fromIndex;
+        buffer.checkIndex(fromIndex, length);
+        if (!PlatformDependent.isUnaligned()) {
+            return linearFirstIndexOf(buffer, fromIndex, toIndex, value);
+        }
+        assert PlatformDependent.isUnaligned();
+        int offset = fromIndex;
+        final int byteCount = length & 7;
+        if (byteCount > 0) {
+            final int index = unrolledFirstIndexOf(buffer, fromIndex, byteCount, value);
+            if (index != -1) {
+                return index;
+            }
+            offset += byteCount;
+            if (offset == toIndex) {
+                return -1;
+            }
+        }
+        final int longCount = length >>> 3;
+        final ByteOrder nativeOrder = ByteOrder.nativeOrder();
+        final boolean isNative = nativeOrder == buffer.order();
+        final boolean useLE = nativeOrder == ByteOrder.LITTLE_ENDIAN;
+        final long pattern = SWARUtil.compilePattern(value);
+        for (int i = 0; i < longCount; i++) {
+            // use the faster available getLong
+            final long word = useLE? buffer._getLongLE(offset) : buffer._getLong(offset);
+            int index = SWARUtil.firstAnyPattern(word, pattern, isNative);
+            if (index < Long.BYTES) {
+                return offset + index;
+            }
+            offset += Long.BYTES;
+        }
+        return -1;
+    }
+
+
     private static int linearFirstIndexOf(AbstractByteBuf buffer, int fromIndex, int toIndex, byte value) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (buffer._getByte(i) == value) {

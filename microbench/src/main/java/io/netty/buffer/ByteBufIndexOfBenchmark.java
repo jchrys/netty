@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package io.netty.microbench.buffer;
+package io.netty.buffer;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -101,7 +101,12 @@ public class ByteBufIndexOfBenchmark extends AbstractMicrobenchmark {
 
     @Benchmark
     public int indexOf() {
-        return getData().indexOf(0, size, needleByte);
+        return ByteBufUtil.firstIndexOf((AbstractByteBuf) getData(), 0, size, needleByte);
+    }
+
+    @Benchmark
+    public int indexOfOld() {
+        return ByteBufUtil.firstIndexOfOld((AbstractByteBuf) getData(), 0, size, needleByte);
     }
 
     @TearDown

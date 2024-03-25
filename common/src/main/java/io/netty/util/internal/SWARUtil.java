@@ -27,6 +27,14 @@ public final class SWARUtil {
         return (byteToFind & 0xFFL) * 0x101010101010101L;
     }
 
+    public static int firstAnyPattern(long word, long pattern, boolean leading) {
+        long input = word ^ pattern;
+        long tmp = (input & 0x7F7F7F7F7F7F7F7FL) + 0x7F7F7F7F7F7F7F7FL;
+        tmp = ~(tmp | input | 0x7F7F7F7F7F7F7F7FL);
+        final int binaryPosition = leading? Long.numberOfLeadingZeros(tmp) : Long.numberOfTrailingZeros(tmp);
+        return binaryPosition >>> 3;
+    }
+
     /**
      * Applies a compiled pattern to given word.
      * Returns a word where each byte that matches the pattern has the highest bit set.
