@@ -100,7 +100,7 @@ public class ByteBufIndexOfBenchmark extends AbstractMicrobenchmark {
     }
 
     @Benchmark
-    public int indexOf() {
+    public int indexOfNew() {
         return getData().indexOf(0, size, needleByte);
     }
 
