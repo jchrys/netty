@@ -251,6 +251,110 @@ final class AsciiStringUtil {
         }
     }
 
+    static boolean contentEqualsIgnoreCase(final AsciiString lhs, final AsciiString rhs) {
+        assert lhs.length() == rhs.length();
+        if (!PlatformDependent.isUnaligned()) {
+            return linearContentEqualsIgnoreCase(lhs, rhs);
+        }
+        final byte[] lhsArray = lhs.array();
+        final int lhsOffset = lhs.arrayOffset();
+        final byte[] rhsArray = rhs.array();
+        final int rhsOffset = rhs.arrayOffset();
+        final int lenght = lhs.length();
+        final int byteCount = lenght & 7;
+        final int longCount = lenght >>> 3;
+        int offset = 0;
+        for (; offset < longCount; offset += Long.BYTES) {
+            final long lhsWord = PlatformDependent.getLong(lhsArray, lhsOffset + offset);
+            final long rhsWord = PlatformDependent.getLong(rhsArray, rhsOffset + offset);
+            if (!equalsIgnoreCase(lhsWord, rhsWord)) {
+                return false;
+            }
+        }
+        return unrolledContentEqualsIgnoreCase(lhsArray, lhsOffset + offset,
+                                               rhsArray, rhsOffset + offset, byteCount);
+    }
+
+    private static boolean linearContentEqualsIgnoreCase(final AsciiString lhs, final AsciiString rhs) {
+        final byte[] lhsArray = lhs.array();
+        final int lhsOffset = lhs.arrayOffset();
+        final int lhsLength = lhs.length();
+        final int rhsOffset = rhs.arrayOffset();
+        final int rhsLength = rhs.length();
+        final byte[] rhsArray = rhs.array();
+        if (lhsOffset == 0 && rhsOffset == 0 && lhsLength == rhsLength) {
+            for (int i = 0; i < lhsLength; ++i) {
+                if (!equalsIgnoreCase(lhsArray[i], rhsArray[i])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return misalginedEqualsIgnoreCase(lhsArray, lhsOffset, rhsArray, rhsOffset, lhsLength);
+    }
+
+    private static boolean misalginedEqualsIgnoreCase(final byte[] lhsArray, final int lhsOffset,
+                                                      final byte[] rhsArray, final int rhsOffset, final int length) {
+        for (int i = lhsOffset, j = rhsOffset, end = lhsOffset + length; i < end; ++i, ++j) {
+            if (!equalsIgnoreCase(lhsArray[i], rhsArray[j])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean unrolledContentEqualsIgnoreCase(final byte[] lhsArray, int lhsOffset,
+                                                           final byte[] rhsArray, int rhsOffset, final int byteCount) {
+        assert byteCount >= 0 && byteCount < 8;
+        switch (byteCount) {
+        case 1:
+            return equalsIgnoreCase(PlatformDependent.getByte(rhsArray, lhsOffset),
+                                    PlatformDependent.getByte(rhsArray, rhsOffset));
+        case 2:
+            final short lWord = PlatformDependent.getShort(lhsArray, lhsOffset);
+            final short rWord = PlatformDependent.getShort(rhsArray, rhsOffset);
+            if (equalsIgnoreCase((byte) (lWord >>> 8), (byte) (rWord >>> 8))) {
+                return equalsIgnoreCase((byte) lWord, (byte) rWord);
+            }
+            return false;
+        case 3:
+            if (equalsIgnoreCase(PlatformDependent.getByte(lhsArray, lhsOffset),
+                                 PlatformDependent.getByte(rhsArray, rhsOffset))) {
+                final short lWord2 = PlatformDependent.getShort(lhsArray, lhsOffset + 1);
+                final short rWord2 = PlatformDependent.getShort(rhsArray, rhsOffset + 1);
+                return equalsIgnoreCase((byte) lWord2, (byte) rWord2);
+            }
+            return false;
+        case 4:
+            return equalsIgnoreCase(PlatformDependent.getInt(lhsArray, lhsOffset),
+                                    PlatformDependent.getInt(rhsArray, rhsOffset));
+        case 5:
+            if (equalsIgnoreCase(PlatformDependent.getByte(lhsArray, lhsOffset),
+                                 PlatformDependent.getByte(rhsArray, rhsOffset))) {
+                return equalsIgnoreCase(PlatformDependent.getInt(lhsArray, lhsOffset + 1),
+                                        PlatformDependent.getInt(rhsArray, rhsOffset + 1));
+            }
+            return false;
+
+        case 6:
+            final short lWord3 = PlatformDependent.getShort(lhsArray, lhsOffset);
+            final short rWord3 = PlatformDependent.getShort(rhsArray, rhsOffset);
+            if (equalsIgnoreCase((byte) (lWord3 >>> 8), (byte) (rWord3 >>> 8)) &&
+                equalsIgnoreCase((byte) lWord3, (byte) rWord3)) {
+                return equalsIgnoreCase(PlatformDependent.getInt(lhsArray, lhsOffset + 2),
+                                        PlatformDependent.getInt(rhsArray, rhsOffset + 2));
+            }
+            return false;
+        case 7:
+            long lWord4 = PlatformDependent.getInt(lhsArray, lhsOffset);
+            long rWord4 = PlatformDependent.getInt(rhsArray, rhsOffset);
+            lWord4 |= (long) PlatformDependent.getInt(lhsArray, lhsOffset + 3) << 32;
+            rWord4 |= (long) PlatformDependent.getInt(rhsArray, rhsOffset + 3) << 32;
+            return equalsIgnoreCase(lWord4, rWord4);
+        }
+        return true;
+    }
+
     private static boolean isLowerCase(final byte value) {
         return value >= 'a' && value <= 'z';
     }
@@ -283,6 +387,18 @@ final class AsciiStringUtil {
      */
     static byte toUpperCase(final byte value) {
         return isLowerCase(value)? (byte) (value - 32) : value;
+    }
+
+    private static boolean equalsIgnoreCase(final long a, final long b) {
+        return a == b || SWARUtil.toLowerCase(a) == SWARUtil.toLowerCase(b);
+    }
+
+    private static boolean equalsIgnoreCase(final int a, final int b) {
+        return a == b || SWARUtil.toLowerCase(a) == SWARUtil.toLowerCase(b);
+    }
+
+    private static boolean equalsIgnoreCase(final byte a, final byte b) {
+        return a == b || toLowerCase(a) == toLowerCase(b);
     }
 
     private AsciiStringUtil() {
