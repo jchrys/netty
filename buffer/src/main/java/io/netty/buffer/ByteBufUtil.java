@@ -726,31 +726,25 @@ public final class ByteBufUtil {
         if (!PlatformDependent.isUnaligned()) {
             return linearLastIndexOf(buffer, fromIndex, toIndex, value);
         }
-        final int byteCount = length & 7;
-        if (byteCount > 0) {
-            final int index = unrolledLastIndexOf(buffer, fromIndex - 1, byteCount, value);
-            if (index != -1) {
-                return index;
-            }
-        }
         final int longCount = length >>> 3;
-        final ByteOrder nativeOrder = ByteOrder.nativeOrder();
-        final boolean isNative = nativeOrder == buffer.order();
-        final boolean useLE = nativeOrder == ByteOrder.LITTLE_ENDIAN;
-        final long pattern = SWARUtil.compilePattern(value);
-        int offset = fromIndex - Long.BYTES - byteCount;
-        for (int i = 0; i < longCount; i++) {
-            assert offset >= toIndex;
-            // use the faster available getLong
-            final long word = useLE? buffer._getLongLE(offset) : buffer._getLong(offset);
-            final long result = SWARUtil.applyPattern(word, pattern);
-            if (result != 0) {
-                return offset + Long.BYTES - 1 - SWARUtil.getIndex(result, !isNative);
+        int offset = fromIndex;
+        if (longCount > 0) {
+            final ByteOrder nativeOrder = ByteOrder.nativeOrder();
+            final boolean isNative = nativeOrder == buffer.order();
+            final boolean useLE = nativeOrder == ByteOrder.LITTLE_ENDIAN;
+            final long pattern = SWARUtil.compilePattern(value);
+            for (int i = 0; i < longCount; i++) {
+                // use the faster available getLong
+                final long word = useLE? buffer._getLongLE(offset - Long.BYTES)
+                        : buffer._getLong(offset - Long.BYTES);
+                final long result = SWARUtil.applyPattern(word, pattern);
+                if (result != 0) {
+                    return offset - 1 - SWARUtil.getIndex(result, !isNative);
+                }
+                offset -= Long.BYTES;
             }
-            offset -= Long.BYTES;
         }
-        assert offset + Long.BYTES == toIndex;
-        return -1;
+        return unrolledLastIndexOf(buffer, offset, length & 7, value);
     }
 
     private static int linearLastIndexOf(final AbstractByteBuf buffer, final int fromIndex, final int toIndex,
@@ -765,45 +759,48 @@ public final class ByteBufUtil {
 
     private static int unrolledLastIndexOf(final AbstractByteBuf buffer, final int fromIndex, final int byteCount,
                                            final byte value) {
-        assert byteCount > 0 && byteCount < 8;
-        if (buffer._getByte(fromIndex) == value) {
-            return fromIndex;
-        }
-        if (byteCount == 1) {
+        assert byteCount >= 0 && byteCount < 8;
+        if (byteCount == 0) {
             return -1;
         }
         if (buffer._getByte(fromIndex - 1) == value) {
             return fromIndex - 1;
         }
-        if (byteCount == 2) {
+        if (byteCount == 1) {
             return -1;
         }
         if (buffer._getByte(fromIndex - 2) == value) {
             return fromIndex - 2;
         }
-        if (byteCount == 3) {
+        if (byteCount == 2) {
             return -1;
         }
         if (buffer._getByte(fromIndex - 3) == value) {
             return fromIndex - 3;
         }
-        if (byteCount == 4) {
+        if (byteCount == 3) {
             return -1;
         }
         if (buffer._getByte(fromIndex - 4) == value) {
             return fromIndex - 4;
         }
-        if (byteCount == 5) {
+        if (byteCount == 4) {
             return -1;
         }
         if (buffer._getByte(fromIndex - 5) == value) {
             return fromIndex - 5;
         }
-        if (byteCount == 6) {
+        if (byteCount == 5) {
             return -1;
         }
         if (buffer._getByte(fromIndex - 6) == value) {
             return fromIndex - 6;
+        }
+        if (byteCount == 6) {
+            return -1;
+        }
+        if (buffer._getByte(fromIndex - 7) == value) {
+            return fromIndex - 7;
         }
         return -1;
     }
