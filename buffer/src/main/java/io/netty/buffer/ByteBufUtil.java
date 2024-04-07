@@ -727,25 +727,22 @@ public final class ByteBufUtil {
             return linearLastIndexOf(buffer, fromIndex, toIndex, value);
         }
         final int longCount = length >>> 3;
-        int offset = fromIndex;
         if (longCount > 0) {
             final ByteOrder nativeOrder = ByteOrder.nativeOrder();
             final boolean isNative = nativeOrder == buffer.order();
             final boolean useLE = nativeOrder == ByteOrder.LITTLE_ENDIAN;
             final long pattern = SWARUtil.compilePattern(value);
-            for (int i = 0; i < longCount; i++) {
+            for (int i = 0, offset = fromIndex - Long.BYTES; i < longCount; i++, offset -= Long.BYTES) {
                 // use the faster available getLong
-                final long word = useLE? buffer._getLongLE(offset - Long.BYTES)
-                        : buffer._getLong(offset - Long.BYTES);
+                final long word = useLE? buffer._getLongLE(offset) : buffer._getLong(offset);
                 final long result = SWARUtil.applyPattern(word, pattern);
                 if (result != 0) {
                     // used the oppoiste endianness since we are looking for the last index.
-                    return offset - 1 - SWARUtil.getIndex(result, !isNative);
+                    return offset + Long.BYTES - 1 - SWARUtil.getIndex(result, !isNative);
                 }
-                offset -= Long.BYTES;
             }
         }
-        return unrolledLastIndexOf(buffer, offset, length & 7, value);
+        return unrolledLastIndexOf(buffer, fromIndex - (longCount << 3), length & 7, value);
     }
 
     private static int linearLastIndexOf(final AbstractByteBuf buffer, final int fromIndex, final int toIndex,
