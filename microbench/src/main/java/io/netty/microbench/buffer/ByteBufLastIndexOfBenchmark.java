@@ -63,7 +63,7 @@ public class ByteBufLastIndexOfBenchmark extends AbstractMicrobenchmark {
     @Param({ "true", "false" })
     private boolean direct;
 
-    @Param({ "false", "true" })
+    @Param({ "false" })
     private boolean noUnsafe;
 
     @Param({ "false", "true" })
