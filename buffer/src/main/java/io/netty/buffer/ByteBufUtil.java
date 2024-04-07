@@ -742,7 +742,7 @@ public final class ByteBufUtil {
                 }
             }
         }
-        return unrolledLastIndexOf(buffer, fromIndex - (longCount << 3), length & 7, value);
+        return linearLastIndexOf(buffer, fromIndex - (longCount << 3), toIndex, value);
     }
 
     private static int linearLastIndexOf(final AbstractByteBuf buffer, final int fromIndex, final int toIndex,
