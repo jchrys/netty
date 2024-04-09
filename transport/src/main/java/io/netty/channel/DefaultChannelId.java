@@ -167,7 +167,7 @@ public final class DefaultChannelId implements ChannelId {
 
         if (pid < 0) {
             pid = PlatformDependent.threadLocalRandom().nextInt();
-            logger.warn("Failed to find the current process ID from '{}'; using a random value: {}",  value, pid);
+            logger.warn("Failed to find the current process ID from '{}'; using a random value: {}", value, pid);
         }
 
         return pid;
@@ -196,13 +196,9 @@ public final class DefaultChannelId implements ChannelId {
         System.arraycopy(MACHINE_ID, 0, data, i, MACHINE_ID.length);
         i += MACHINE_ID.length;
 
-        // processId
-        writeInt(data, i, PROCESS_ID);
-        i += Integer.BYTES;
-
-        // sequence
-        writeInt(data, i, nextSequence.getAndIncrement());
-        i += Integer.BYTES;
+        // processId & sequence
+        writeLong(data, i, (long) PROCESS_ID << 32 | nextSequence.getAndIncrement());
+        i += Long.BYTES;
 
         // timestamp (kind of)
         writeLong(data, i, Long.reverse(System.nanoTime()) ^ System.currentTimeMillis());
