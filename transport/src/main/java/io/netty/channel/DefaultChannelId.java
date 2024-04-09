@@ -189,7 +189,8 @@ public final class DefaultChannelId implements ChannelId {
     private transient String longValue;
 
     private DefaultChannelId() {
-        final byte[] data = new byte[MACHINE_ID.length + PROCESS_ID_LEN + SEQUENCE_LEN + TIMESTAMP_LEN + RANDOM_LEN];
+        final int length = MACHINE_ID.length + PROCESS_ID_LEN + SEQUENCE_LEN + TIMESTAMP_LEN + RANDOM_LEN;
+        final byte[] data = PlatformDependent.allocateUninitializedArray(length);
         int i = 0;
 
         // machineId
@@ -208,7 +209,7 @@ public final class DefaultChannelId implements ChannelId {
         int random = PlatformDependent.threadLocalRandom().nextInt();
         writeInt(data, i, random);
         i += Integer.BYTES;
-        assert i == data.length;
+        assert i == length;
 
         this.data = data;
         hashCode = Arrays.hashCode(data);
