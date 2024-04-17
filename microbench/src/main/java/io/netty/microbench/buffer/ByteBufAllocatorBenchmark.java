@@ -39,8 +39,8 @@ import java.util.concurrent.TimeUnit;
  * This class benchmarks different allocators with different allocation sizes.
  */
 @State(Scope.Benchmark)
-@Warmup(iterations = 5, time = 2)
-@Measurement(iterations = 5, time = 2)
+@Warmup(iterations = 3, time = 5)
+@Measurement(iterations = 5, time = 5)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Threads(8)
 public class ByteBufAllocatorBenchmark extends AbstractMicrobenchmark {
