@@ -21,117 +21,133 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.microbench.util.AbstractMicrobenchmark;
+import io.netty.util.NettyRuntime;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class benchmarks different allocators with different allocation sizes.
  */
 @State(Scope.Benchmark)
+@Warmup(iterations = 5, time = 2)
+@Measurement(iterations = 5, time = 2)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Threads(8)
 public class ByteBufAllocatorBenchmark extends AbstractMicrobenchmark {
+    static {
+        NettyRuntime.setAvailableProcessors(8);
+    }
 
     private static final ByteBufAllocator unpooledAllocator = new UnpooledByteBufAllocator(true);
     private static final ByteBufAllocator pooledAllocator =
-            new PooledByteBufAllocator(true, 4, 4, 8192, 11, 0, 0, 0, true, 0); // Disable thread-local cache
+            new PooledByteBufAllocator(true, PooledByteBufAllocator.defaultNumHeapArena(), PooledByteBufAllocator.defaultNumDirectArena(), 8192, 11, 0, 0, 0, true, 0); // Disable thread-local cache
     private static final ByteBufAllocator adaptiveAllocator = new AdaptiveByteBufAllocator();
 
     private static final int MAX_LIVE_BUFFERS = 8192;
-    private static final Random rand = new Random();
-    private static final ByteBuf[] unpooledHeapBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
-    private static final ByteBuf[] unpooledDirectBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
-    private static final ByteBuf[] pooledHeapBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
-    private static final ByteBuf[] pooledDirectBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
-    private static final ByteBuf[] defaultPooledHeapBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
-    private static final ByteBuf[] defaultPooledDirectBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
-    private static final ByteBuf[] adaptiveHeapBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
-    private static final ByteBuf[] adaptiveDirectBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
+
+    @State(Scope.Thread)
+    public static class ThreadState {
+        final Random rand = new Random();
+        final ByteBuf[] unpooledHeapBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
+        final ByteBuf[] unpooledDirectBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
+        final ByteBuf[] pooledHeapBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
+        final ByteBuf[] pooledDirectBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
+        final ByteBuf[] defaultPooledHeapBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
+        final ByteBuf[] defaultPooledDirectBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
+        final ByteBuf[] adaptiveHeapBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
+        final ByteBuf[] adaptiveDirectBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
+    }
 
     @Param({ "00000", "00256", "01024", "04096", "16384", "65536" })
     public int size;
 
     @Benchmark
-    public void unpooledHeapAllocAndFree() {
-        int idx = rand.nextInt(unpooledHeapBuffers.length);
-        ByteBuf oldBuf = unpooledHeapBuffers[idx];
+    public void unpooledHeapAllocAndFree(ThreadState state) {
+        int idx = state.rand.nextInt(state.unpooledHeapBuffers.length);
+        ByteBuf oldBuf = state.unpooledHeapBuffers[idx];
         if (oldBuf != null) {
             oldBuf.release();
         }
-        unpooledHeapBuffers[idx] = unpooledAllocator.heapBuffer(size);
+        state.unpooledHeapBuffers[idx] = unpooledAllocator.heapBuffer(size);
     }
 
     @Benchmark
-    public void unpooledDirectAllocAndFree() {
-        int idx = rand.nextInt(unpooledDirectBuffers.length);
-        ByteBuf oldBuf = unpooledDirectBuffers[idx];
+    public void unpooledDirectAllocAndFree(final ThreadState state) {
+        int idx = state.rand.nextInt(state.unpooledDirectBuffers.length);
+        ByteBuf oldBuf = state.unpooledDirectBuffers[idx];
         if (oldBuf != null) {
             oldBuf.release();
         }
-        unpooledDirectBuffers[idx] = unpooledAllocator.directBuffer(size);
+        state.unpooledDirectBuffers[idx] = unpooledAllocator.directBuffer(size);
     }
 
     @Benchmark
-    public void pooledHeapAllocAndFree() {
-        int idx = rand.nextInt(pooledHeapBuffers.length);
-        ByteBuf oldBuf = pooledHeapBuffers[idx];
+    public void pooledHeapAllocAndFree(final ThreadState state) {
+        int idx = state.rand.nextInt(state.pooledHeapBuffers.length);
+        ByteBuf oldBuf = state.pooledHeapBuffers[idx];
         if (oldBuf != null) {
             oldBuf.release();
         }
-        pooledHeapBuffers[idx] = pooledAllocator.heapBuffer(size);
+        state.pooledHeapBuffers[idx] = pooledAllocator.heapBuffer(size);
     }
 
     @Benchmark
-    public void pooledDirectAllocAndFree() {
-        int idx = rand.nextInt(pooledDirectBuffers.length);
-        ByteBuf oldBuf = pooledDirectBuffers[idx];
+    public void pooledDirectAllocAndFree(final ThreadState state) {
+        int idx = state.rand.nextInt(state.pooledDirectBuffers.length);
+        ByteBuf oldBuf = state.pooledDirectBuffers[idx];
         if (oldBuf != null) {
             oldBuf.release();
         }
-        pooledDirectBuffers[idx] = pooledAllocator.directBuffer(size);
+        state.pooledDirectBuffers[idx] = pooledAllocator.directBuffer(size);
     }
 
     @Benchmark
-    public void defaultPooledHeapAllocAndFree() {
-        int idx = rand.nextInt(defaultPooledHeapBuffers.length);
-        ByteBuf oldBuf = defaultPooledHeapBuffers[idx];
+    public void defaultPooledHeapAllocAndFree(final ThreadState state) {
+        int idx = state.rand.nextInt(state.defaultPooledHeapBuffers.length);
+        ByteBuf oldBuf = state.defaultPooledHeapBuffers[idx];
         if (oldBuf != null) {
             oldBuf.release();
         }
-        defaultPooledHeapBuffers[idx] = PooledByteBufAllocator.DEFAULT.heapBuffer(size);
+        state.defaultPooledHeapBuffers[idx] = PooledByteBufAllocator.DEFAULT.heapBuffer(size);
     }
 
     @Benchmark
-    public void defaultPooledDirectAllocAndFree() {
-        int idx = rand.nextInt(defaultPooledDirectBuffers.length);
-        ByteBuf oldBuf = defaultPooledDirectBuffers[idx];
+    public void defaultPooledDirectAllocAndFree(final ThreadState state) {
+        int idx = state.rand.nextInt(state.defaultPooledDirectBuffers.length);
+        ByteBuf oldBuf = state.defaultPooledDirectBuffers[idx];
         if (oldBuf != null) {
             oldBuf.release();
         }
-        defaultPooledDirectBuffers[idx] = PooledByteBufAllocator.DEFAULT.directBuffer(size);
+        state.defaultPooledDirectBuffers[idx] = PooledByteBufAllocator.DEFAULT.directBuffer(size);
     }
 
     @Benchmark
-    public void adaptiveHeapAllocAndFree() {
-        int idx = rand.nextInt(adaptiveHeapBuffers.length);
-        ByteBuf oldBuf = adaptiveHeapBuffers[idx];
+    public void adaptiveHeapAllocAndFree(final ThreadState state) {
+        int idx = state.rand.nextInt(state.adaptiveHeapBuffers.length);
+        ByteBuf oldBuf = state.adaptiveHeapBuffers[idx];
         if (oldBuf != null) {
             oldBuf.release();
         }
-        adaptiveHeapBuffers[idx] = adaptiveAllocator.heapBuffer(size);
+        state.adaptiveHeapBuffers[idx] = adaptiveAllocator.heapBuffer(size);
     }
 
     @Benchmark
-    public void adaptiveDirectAllocAndFree() {
-        int idx = rand.nextInt(adaptiveDirectBuffers.length);
-        ByteBuf oldBuf = adaptiveDirectBuffers[idx];
+    public void adaptiveDirectAllocAndFree(final ThreadState state) {
+        int idx = state.rand.nextInt(state.adaptiveDirectBuffers.length);
+        ByteBuf oldBuf = state.adaptiveDirectBuffers[idx];
         if (oldBuf != null) {
             oldBuf.release();
         }
-        adaptiveDirectBuffers[idx] = adaptiveAllocator.directBuffer(size);
+        state.adaptiveDirectBuffers[idx] = adaptiveAllocator.directBuffer(size);
     }
 }
