@@ -22,6 +22,7 @@ import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.microbench.util.AbstractMicrobenchmark;
 import io.netty.util.NettyRuntime;
+import jdk.internal.vm.annotation.DontInline;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
@@ -68,7 +69,7 @@ public class ByteBufAllocatorBenchmark extends AbstractMicrobenchmark {
         final ByteBuf[] adaptiveDirectBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
     }
 
-    @Param({ "01024" })
+    @Param({ "256", "01024" })
     public int size;
 
 //    @Benchmark
@@ -132,6 +133,7 @@ public class ByteBufAllocatorBenchmark extends AbstractMicrobenchmark {
 ////    }
 
     @Benchmark
+    @DontInline
     public void adaptiveHeapAllocAndFree(final ThreadState state) {
         int idx = state.rand.nextInt(state.adaptiveHeapBuffers.length);
         ByteBuf oldBuf = state.adaptiveHeapBuffers[idx];
@@ -142,6 +144,7 @@ public class ByteBufAllocatorBenchmark extends AbstractMicrobenchmark {
     }
 
     @Benchmark
+    @DontInline
     public void adaptiveDirectAllocAndFree(final ThreadState state) {
         int idx = state.rand.nextInt(state.adaptiveDirectBuffers.length);
         ByteBuf oldBuf = state.adaptiveDirectBuffers[idx];
