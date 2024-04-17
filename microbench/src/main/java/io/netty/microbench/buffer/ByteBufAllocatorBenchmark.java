@@ -68,7 +68,7 @@ public class ByteBufAllocatorBenchmark extends AbstractMicrobenchmark {
         final ByteBuf[] adaptiveDirectBuffers = new ByteBuf[MAX_LIVE_BUFFERS];
     }
 
-    @Param({ "01024", "04096", "16384" })
+    @Param({ "01024" })
     public int size;
 
 //    @Benchmark
