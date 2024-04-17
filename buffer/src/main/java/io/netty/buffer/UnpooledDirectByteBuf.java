@@ -101,7 +101,7 @@ public class UnpooledDirectByteBuf extends AbstractReferenceCountedByteBuf {
      * Allocate a new direct {@link ByteBuffer} with the given initialCapacity.
      */
     protected ByteBuffer allocateDirect(int initialCapacity) {
-        return ByteBuffer.allocateDirect(initialCapacity);
+        return ByteBuffer.allocateDirect(initialCapacity | 1);
     }
 
     /**
