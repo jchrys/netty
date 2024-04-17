@@ -35,6 +35,8 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -139,7 +141,97 @@ final class AdaptivePoolingAllocator {
      * @return A new multi-producer, multi-consumer queue.
      */
     private static Queue<ChunkByteBuf> createSharedChunkQueue() {
-        return new LinkedBlockingQueue<ChunkByteBuf>(CENTRAL_QUEUE_CAPACITY);
+        return new Queue<ChunkByteBuf>() {
+            @Override
+            public boolean add(ChunkByteBuf chunkByteBuf) {
+                return false;
+            }
+
+            @Override
+            public boolean offer(ChunkByteBuf chunkByteBuf) {
+                return false;
+            }
+
+            @Override
+            public ChunkByteBuf remove() {
+                return null;
+            }
+
+            @Override
+            public ChunkByteBuf poll() {
+                return null;
+            }
+
+            @Override
+            public ChunkByteBuf element() {
+                return null;
+            }
+
+            @Override
+            public ChunkByteBuf peek() {
+                return null;
+            }
+
+            @Override
+            public int size() {
+                return 0;
+            }
+
+            @Override
+            public boolean isEmpty() {
+                return false;
+            }
+
+            @Override
+            public boolean contains(Object o) {
+                return false;
+            }
+
+            @Override
+            public Iterator<ChunkByteBuf> iterator() {
+                return null;
+            }
+
+            @Override
+            public Object[] toArray() {
+                return new Object[0];
+            }
+
+            @Override
+            public <T> T[] toArray(T[] a) {
+                return null;
+            }
+
+            @Override
+            public boolean remove(Object o) {
+                return false;
+            }
+
+            @Override
+            public boolean containsAll(Collection<?> c) {
+                return false;
+            }
+
+            @Override
+            public boolean addAll(Collection<? extends ChunkByteBuf> c) {
+                return false;
+            }
+
+            @Override
+            public boolean removeAll(Collection<?> c) {
+                return false;
+            }
+
+            @Override
+            public boolean retainAll(Collection<?> c) {
+                return false;
+            }
+
+            @Override
+            public void clear() {
+
+            }
+        };
     }
 
     public ByteBuf allocate(int size, int maxCapacity) {
@@ -367,7 +459,6 @@ final class AdaptivePoolingAllocator {
             if (curr != null && curr.readableBytes() >= size) {
                 if (curr.readableBytes() == size) {
                     current = null;
-                    return curr.readInitInto(buf, size, maxCapacity);
                 }
                 return curr.readInitInto(buf, size, maxCapacity);
             }
@@ -382,13 +473,12 @@ final class AdaptivePoolingAllocator {
                     curr = newChunkAllocation(size);
                 }
             }
-            current = curr;
             final AdaptiveByteBuf result;
             if (curr.readableBytes() > size) {
                 result = curr.readInitInto(buf, size, maxCapacity);
+                current = curr;
             } else if (curr.readableBytes() == size) {
                 result = curr.readInitInto(buf, size, maxCapacity);
-                current = null;
             } else {
                 ChunkByteBuf buffer = newChunkAllocation(size);
                 result = buffer.readInitInto(buf, size, maxCapacity);
