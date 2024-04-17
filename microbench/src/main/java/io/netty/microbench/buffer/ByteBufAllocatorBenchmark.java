@@ -131,17 +131,17 @@ public class ByteBufAllocatorBenchmark extends AbstractMicrobenchmark {
 ////        }
 ////        state.defaultPooledDirectBuffers[idx] = PooledByteBufAllocator.DEFAULT.directBuffer(size);
 ////    }
-
-    @Benchmark
-    @DontInline
-    public void adaptiveHeapAllocAndFree(final ThreadState state) {
-        int idx = state.rand.nextInt(state.adaptiveHeapBuffers.length);
-        ByteBuf oldBuf = state.adaptiveHeapBuffers[idx];
-        if (oldBuf != null) {
-            oldBuf.release();
-        }
-        state.adaptiveHeapBuffers[idx] = adaptiveAllocator.heapBuffer(size);
-    }
+//
+//    @Benchmark
+//    @DontInline
+//    public void adaptiveHeapAllocAndFree(final ThreadState state) {
+//        int idx = state.rand.nextInt(state.adaptiveHeapBuffers.length);
+//        ByteBuf oldBuf = state.adaptiveHeapBuffers[idx];
+//        if (oldBuf != null) {
+//            oldBuf.release();
+//        }
+//        state.adaptiveHeapBuffers[idx] = adaptiveAllocator.heapBuffer(size);
+//    }
 
     @Benchmark
     @DontInline
